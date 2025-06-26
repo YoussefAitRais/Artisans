@@ -47,7 +47,7 @@ public class UtilisateurController {
             return ResponseEntity.notFound().build();
     }
 
-    @PutMapping
+    @PutMapping("/{id}")
     public ResponseEntity UpdateUtilisateur(@PathVariable Long id ,  @RequestBody Utilisateur utilisateur) {
         Optional<Utilisateur> updated = utilisateurService.update(id, utilisateur);
         return updated.map(ResponseEntity::ok)
