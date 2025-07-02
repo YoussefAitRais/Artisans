@@ -1,0 +1,38 @@
+<div class=" bg-[#111827] flex min-h-screen items-center justify-center">
+  <div class="mx-auto w-full max-w-2xl px-2">
+    <h1 class="mb-8 text-center text-white text-3xl font-bold">Frequently Asked Questions</h1>
+
+    <!-- FAQ Item 1 -->
+    <div class="mb-4 rounded-lg border bg-[#db2777]">
+      <button (click)="toggle(1)" class="flex w-full items-center justify-between px-6 py-4 text-left focus:outline-none">
+        <span class="text-lg font-semibold">What is Tailwind CSS?</span>
+        <span>{{ isOpen(1) ? '−' : '+' }}</span>
+      </button>
+      <div *ngIf="isOpen(1)" @fade class="px-6 pb-4">
+        <p class="text-white">Tailwind CSS is a utility-first CSS framework for rapidly building custom user interfaces.</p>
+      </div>
+    </div>
+
+    <!-- FAQ Item 2 -->
+    <div class="mb-4 rounded-lg border bg-[#db2777]">
+      <button (click)="toggle(2)" class="flex w-full items-center justify-between px-6 py-4 text-left focus:outline-none">
+        <span class="text-lg font-semibold">What is Alpine.js?</span>
+        <span>{{ isOpen(2) ? '−' : '+' }}</span>
+      </button>
+      <div *ngIf="isOpen(2)" @fade class="px-6 pb-4">
+        <p class="text-white">Alpine.js is a minimal framework for composing behavior directly in your HTML. It's like jQuery for the modern web.</p>
+      </div>
+    </div>
+
+    <!-- FAQ Item 3 -->
+    <div class="mb-4 rounded-lg border bg-[#db2777]">
+      <button (click)="toggle(3)" class="flex w-full items-center justify-between px-6 py-4 text-left focus:outline-none">
+        <span class="text-lg font-semibold">How do I use Tailwind with Alpine.js?</span>
+        <span>{{ isOpen(3) ? '−' : '+' }}</span>
+      </button>
+      <div *ngIf="isOpen(3)" @fade class="px-6 pb-4">
+        <p class="text-white">You can use Tailwind CSS for styling and Alpine.js for interactivity. They work seamlessly together to create lightweight, dynamic components.</p>
+      </div>
+    </div>
+  </div>
+</div>
