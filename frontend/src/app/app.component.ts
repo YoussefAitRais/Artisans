@@ -7,13 +7,24 @@ import {WhyChooseUsComponent} from "./why-choose-us/why-choose-us.component";
 import {WhyUsComponent} from "./why-us/why-us.component";
 import {FaqComponent} from "./faq/faq.component";
 import {FooterComponent} from "./footer/footer.component";
+import {Register} from "./register/register.component";
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, NavbarComponent, HomeComponent, CardsComponent, WhyChooseUsComponent, WhyUsComponent, FaqComponent, FooterComponent],
+  imports: [
+    RouterOutlet,
+    NavbarComponent,
+    HomeComponent,
+    CardsComponent,
+    WhyChooseUsComponent,
+    WhyUsComponent,
+    FaqComponent,
+    FooterComponent,
+    Register
+  ],
   templateUrl: './app.component.html',
-  styleUrl: './app.component.css'
+  styleUrls: ['./app.component.css']
 })
 export class AppComponent {
   title = 'frontend';
