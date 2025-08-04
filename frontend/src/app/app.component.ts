@@ -14,14 +14,13 @@ import {Register} from "./register/register.component";
   standalone: true,
   imports: [
     RouterOutlet,
-    NavbarComponent,
-    HomeComponent,
-    CardsComponent,
-    WhyChooseUsComponent,
-    WhyUsComponent,
-    FaqComponent,
-    FooterComponent,
-    Register
+    //NavbarComponent,
+    //     HomeComponent,
+    //     CardsComponent,
+    //     WhyChooseUsComponent,
+    //     WhyUsComponent,
+    //     FaqComponent,
+    //     FooterComponent
   ],
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css']

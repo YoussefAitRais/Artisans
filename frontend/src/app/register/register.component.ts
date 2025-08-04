@@ -15,8 +15,8 @@ export type registerForm = {
   selector: 'app-register',
   standalone: true,
   imports: [FormsModule, CommonModule],
-  templateUrl: './register.html',
-  styleUrls: ['./register.css'],
+  templateUrl: './register.component.html',
+  styleUrls: ['./register.component.css'],
 })
 export class Register {
   registerObj: registerForm = {
