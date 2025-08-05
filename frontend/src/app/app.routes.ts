@@ -5,8 +5,16 @@ import { LoginComponent } from './login/login.component';
 import {NavbarComponent} from "./navbar/navbar.component";
 
 export const routes: Routes = [
-  { path: '', component: HomeComponent },
-  { path: '', component: NavbarComponent },
-  { path: 'register', component: RegisterComponent },
-  { path: 'login', component: LoginComponent }
+  {
+    path : '',
+    component : HomeComponent,
+  },
+  {
+    path: 'register',
+    component: RegisterComponent
+  },
+  {
+    path: 'login',
+    component: LoginComponent
+  }
 ];
