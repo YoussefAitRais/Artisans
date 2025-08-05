@@ -18,7 +18,7 @@ export type registerForm = {
   templateUrl: './register.component.html',
   styleUrls: ['./register.component.css'],
 })
-export class Register {
+export class RegisterComponent {
   registerObj: registerForm = {
     firstName: '',
     lastName: '',
@@ -40,3 +40,5 @@ export class Register {
     this.registerObj.role = role;
   }
 }
+
+
