@@ -1,1 +1,167 @@
-<p>admin-users works!</p>
+<div class="space-y-4">
+  <!-- Filters -->
+  <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+    <h2 class="text-xl font-semibold">Utilisateurs</h2>
+
+    <div class="flex flex-col sm:flex-row gap-2 sm:items-center">
+      <div class="relative">
+        <input [ngModel]="q()" (ngModelChange)="q.set($event); page.set(1)"
+               type="text" placeholder="Rechercher (nom, email...)"
+               class="w-64 rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-pink-600">
+        <span class="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-gray-400">⌕</span>
+      </div>
+
+      <select [ngModel]="roleFilter()" (ngModelChange)="roleFilter.set($event); page.set(1)"
+              class="rounded-md border border-gray-300 bg-white px-3 py-2 text-sm">
+        <option value="ALL">Tous les rôles</option>
+        <option value="ADMIN">ADMIN</option>
+        <option value="ARTISAN">ARTISAN</option>
+        <option value="CLIENT">CLIENT</option>
+      </select>
+
+      <select [ngModel]="statusFilter()" (ngModelChange)="statusFilter.set($event); page.set(1)"
+              class="rounded-md border border-gray-300 bg-white px-3 py-2 text-sm">
+        <option value="ALL">Tous les statuts</option>
+        <option value="ACTIVE">ACTIVE</option>
+        <option value="SUSPENDED">SUSPENDED</option>
+      </select>
+
+      <button (click)="resetFilters()"
+              class="rounded-md border border-gray-300 px-3 py-2 text-sm hover:bg-gray-50">
+        Réinitialiser
+      </button>
+
+      <button (click)="newUser()"
+              class="rounded-md bg-pink-600 px-4 py-2 text-sm font-semibold text-white hover:bg-pink-700">
+        + Nouvel utilisateur
+      </button>
+    </div>
+  </div>
+
+  <!-- Table -->
+  <div class="overflow-auto rounded-xl border border-gray-200 bg-white shadow-sm">
+    <table class="min-w-full text-left text-sm">
+      <thead class="bg-gray-50 text-gray-600">
+      <tr>
+        <th class="px-4 py-3">#</th>
+        <th class="px-4 py-3 cursor-pointer select-none" (click)="setSort('name')">Nom</th>
+        <th class="px-4 py-3 cursor-pointer select-none" (click)="setSort('email')">Email</th>
+        <th class="px-4 py-3">Rôle</th>
+        <th class="px-4 py-3">Statut</th>
+        <th class="px-4 py-3 cursor-pointer select-none" (click)="setSort('createdAt')">Créé le</th>
+        <th class="px-4 py-3 text-right">Actions</th>
+      </tr>
+      </thead>
+      <tbody>
+      <tr *ngFor="let u of paged(); trackBy: trackById" class="border-t">
+        <td class="px-4 py-3 text-gray-500">{{ u.id }}</td>
+        <td class="px-4 py-3 font-medium text-gray-900">{{ u.name }}</td>
+        <td class="px-4 py-3 text-gray-700">{{ u.email }}</td>
+        <td class="px-4 py-3">
+            <span class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium"
+                  [ngClass]="{
+                    'bg-purple-100 text-purple-700': u.role === 'ADMIN',
+                    'bg-blue-100 text-blue-700':    u.role === 'ARTISAN',
+                    'bg-gray-100 text-gray-700':    u.role === 'CLIENT'
+                  }">
+              {{ u.role }}
+            </span>
+        </td>
+        <td class="px-4 py-3">
+            <span class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium"
+                  [ngClass]="{
+                    'bg-green-100 text-green-700':  u.status === 'ACTIVE',
+                    'bg-amber-100 text-amber-700':  u.status === 'SUSPENDED'
+                  }">
+              {{ u.status }}
+            </span>
+        </td>
+        <td class="px-4 py-3 text-gray-700">{{ u.createdAt }}</td>
+        <td class="px-4 py-3">
+          <div class="flex justify-end gap-2">
+            <button (click)="openEdit(u)" class="rounded-md border border-gray-300 px-2 py-1 text-xs hover:bg-gray-50">Éditer</button>
+            <button (click)="toggleStatus(u)"
+                    class="rounded-md border px-2 py-1 text-xs"
+                    [ngClass]="u.status === 'ACTIVE'
+                        ? 'border-amber-300 text-amber-700 hover:bg-amber-50'
+                        : 'border-green-300 text-green-700 hover:bg-green-50'">
+              {{ u.status === 'ACTIVE' ? 'Suspendre' : 'Activer' }}
+            </button>
+            <button (click)="remove(u)" class="rounded-md border border-rose-300 px-2 py-1 text-xs text-rose-700 hover:bg-rose-50">Supprimer</button>
+          </div>
+        </td>
+      </tr>
+
+      <tr *ngIf="paged().length === 0">
+        <td colspan="7" class="px-4 py-6 text-center text-gray-500">Aucun résultat</td>
+      </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Pagination -->
+  <div class="flex items-center justify-between">
+    <div class="text-sm text-gray-500">
+      Page {{ page() }} / {{ totalPages() }} — {{ filtered().length }} résultats
+    </div>
+    <div class="flex gap-2">
+      <button (click)="prevPage()" class="rounded-md border border-gray-300 px-3 py-1 text-sm hover:bg-gray-50">Précédent</button>
+      <button (click)="nextPage()" class="rounded-md border border-gray-300 px-3 py-1 text-sm hover:bg-gray-50">Suivant</button>
+      <select [ngModel]="pageSize()" (ngModelChange)="pageSize.set($event); page.set(1)"
+              class="rounded-md border border-gray-300 bg-white px-3 py-1 text-sm">
+        <option [ngValue]="5">5</option>
+        <option [ngValue]="6">6</option>
+        <option [ngValue]="10">10</option>
+        <option [ngValue]="20">20</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Edit Modal -->
+  <div *ngIf="showModal()" class="fixed inset-0 z-50">
+    <div class="absolute inset-0 bg-black/40" (click)="closeModal()"></div>
+    <div class="absolute inset-0 flex items-center justify-center p-4">
+      <div class="w-full max-w-lg rounded-xl bg-white shadow-xl">
+        <div class="flex items-center justify-between border-b px-5 py-3">
+          <h3 class="text-lg font-semibold">Éditer utilisateur</h3>
+          <button (click)="closeModal()" class="text-gray-500 hover:text-gray-700">✕</button>
+        </div>
+        <div class="space-y-3 p-5">
+          <div>
+            <label class="text-sm text-gray-600">Nom</label>
+            <input [(ngModel)]="draft()!.name" type="text"
+                   class="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-pink-600">
+          </div>
+          <div>
+            <label class="text-sm text-gray-600">Email</label>
+            <input [(ngModel)]="draft()!.email" type="email"
+                   class="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-pink-600">
+          </div>
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="text-sm text-gray-600">Rôle</label>
+              <select [(ngModel)]="draft()!.role"
+                      class="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm">
+                <option value="ADMIN">ADMIN</option>
+                <option value="ARTISAN">ARTISAN</option>
+                <option value="CLIENT">CLIENT</option>
+              </select>
+            </div>
+            <div>
+              <label class="text-sm text-gray-600">Statut</label>
+              <select [(ngModel)]="draft()!.status"
+                      class="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm">
+                <option value="ACTIVE">ACTIVE</option>
+                <option value="SUSPENDED">SUSPENDED</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="flex items-center justify-end gap-2 border-t px-5 py-3">
+          <button (click)="closeModal()" class="rounded-md border border-gray-300 px-4 py-2 text-sm hover:bg-gray-50">Annuler</button>
+          <button (click)="save()" class="rounded-md bg-pink-600 px-4 py-2 text-sm font-semibold text-white hover:bg-pink-700">Enregistrer</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
