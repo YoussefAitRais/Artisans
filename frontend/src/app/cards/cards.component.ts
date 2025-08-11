@@ -1,6 +1,5 @@
-import { Component } from '@angular/core';
-import { CommonModule } from '@angular/common';
-
+import { Component, AfterViewInit, Inject, PLATFORM_ID } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 
 @Component({
   selector: 'app-cards',
@@ -9,7 +8,8 @@ import { CommonModule } from '@angular/common';
   templateUrl: './cards.component.html',
   styleUrls: ['./cards.component.css']
 })
-export class CardsComponent {
+export class CardsComponent implements AfterViewInit {
+
   services = [
     { name: 'Forgeron', image: 'assets/Images/artisan.jpg' },
     { name: 'Électricien', image: 'assets/Images/artisan.jpg' },
@@ -21,4 +21,13 @@ export class CardsComponent {
     { name: 'Mécanicien', image: 'assets/Images/artisan.jpg' },
   ];
 
+  constructor(@Inject(PLATFORM_ID) private platformId: Object) {}
+
+  ngAfterViewInit(): void {
+    if (!isPlatformBrowser(this.platformId)) return;
+
+    queueMicrotask(() => {
+      (globalThis as any)?.HSStaticMethods?.autoInit?.();
+    });
+  }
 }

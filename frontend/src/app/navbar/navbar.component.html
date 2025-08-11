@@ -8,30 +8,36 @@
       </button>
       <div class="hidden lg:block">
         <ul class="flex space-x-10 text-base font-bold text-black/60 dark:text-white">
-          <li
-            class="hover:underline hover:underline-offset-4 hover:w-fit transition-all duration-100 ease-linear">
-            <a href="#">Home</a>
+          <li class="hover:underline hover:underline-offset-4 hover:w-fit transition-all duration-100 ease-linear">
+            <a routerLink="">Home</a>
           </li>
-          <li
-            class="hover:underline hover:underline-offset-4 hover:w-fit transition-all duration-100 ease-linear">
+          <li class="hover:underline hover:underline-offset-4 hover:w-fit transition-all duration-100 ease-linear">
             <a href="#">About</a>
           </li>
-          <li
-            class="hover:underline hover:underline-offset-4 hover:w-fit transition-all duration-100 ease-linear">
+          <li class="hover:underline hover:underline-offset-4 hover:w-fit transition-all duration-100 ease-linear">
             <a href="#">Contact</a>
           </li>
-          <li
-            class="hover:underline hover:underline-offset-4 hover:w-fit transition-all duration-100 ease-linear">
-            <a href="#">Devenir Un Artisan</a>
+          <li class="hover:underline hover:underline-offset-4 hover:w-fit transition-all duration-100 ease-linear">
+            <a routerLink="/register">Devenir Un Artisan</a>
           </li>
         </ul>
       </div>
       <div class="hidden lg:flex lg:items-center gap-x-2">
-        <button routerLink="register" class= "flex items-center text-black dark:text-white justify-center px-6 py-2.5 font-semibold">Sign up</button>
-        <button routerLink="login" class="flex items-center justify-center rounded-md bg-[#db2777] text-white px-6 py-2.5 font-semibold hover:shadow-lg hover:drop-shadow transition duration-200">Login</button>
+        <a routerLink="/register"
+           class="flex items-center text-black dark:text-white justify-center px-6 py-2.5 font-semibold">
+          Sign up
+        </a>
+        <a routerLink="/login"
+           class="flex items-center justify-center rounded-md bg-[#db2777] text-white px-6 py-2.5 font-semibold hover:shadow-lg hover:drop-shadow transition duration-200">
+          Login
+        </a>
       </div>
       <div class="flex items-center justify-center lg:hidden">
-        <button class="focus:outline-none text-slate-200 dark:text-white"><svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 20 20" aria-hidden="true" class="text-2xl text-slate-800 dark:text-white focus:outline-none active:scale-110 active:text-red-500" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M3 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 10a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM9 15a1 1 0 011-1h6a1 1 0 110 2h-6a1 1 0 01-1-1z" clip-rule="evenodd"></path></svg></button>
+        <button class="focus:outline-none text-slate-200 dark:text-white">
+          <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 20 20" aria-hidden="true" class="text-2xl text-slate-800 dark:text-white focus:outline-none active:scale-110 active:text-red-500" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg">
+            <path fill-rule="evenodd" d="M3 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 10a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM9 15a1 1 0 011-1h6a1 1 0 110 2h-6a1 1 0 01-1-1z" clip-rule="evenodd"></path>
+          </svg>
+        </button>
       </div>
     </div>
   </nav>

@@ -7,12 +7,14 @@ import {WhyUsComponent} from "./why-us/why-us.component";
 import {WhyChooseUsComponent} from "./why-choose-us/why-choose-us.component";
 import {FaqComponent} from "./faq/faq.component";
 import {FooterComponent} from "./footer/footer.component";
+import {CommonModule} from "@angular/common";
 
 @Component({
   selector: 'app-root',
   standalone: true,
   imports: [
     RouterOutlet,
+    CommonModule,
     NavbarComponent,
     HomeComponent,
     CardsComponent,
@@ -27,3 +29,4 @@ import {FooterComponent} from "./footer/footer.component";
 export class AppComponent {
   title = 'frontend';
 }
+
