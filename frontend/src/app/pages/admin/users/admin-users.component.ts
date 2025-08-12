@@ -33,6 +33,7 @@ export class AdminUsersComponent {
     { id: 9, name: 'Sara I.',    email: 'sara@mail.com',    role: 'CLIENT', status: 'ACTIVE',    createdAt: '2024-08-01' },
   ]);
 
+
   q = signal('');
   roleFilter = signal<Role | 'ALL'>('ALL');
   statusFilter = signal<Status | 'ALL'>('ALL');
