@@ -1,12 +1,22 @@
 import { Component } from '@angular/core';
+import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 
 @Component({
   selector: 'app-client-dashboard',
   standalone: true,
-  imports: [],
-  templateUrl: './client-dashboard.component.html',
-  styleUrl: './client-dashboard.component.css'
+  imports: [RouterOutlet, RouterLink, RouterLinkActive],
+  templateUrl: './client-dashboard.component.html'
 })
 export class ClientDashboardComponent {
+  userName = 'Youssef';
+  userEmail = 'client@example.com';
+  sidebarOpen = false;
 
+  constructor(private router: Router) {}
+
+  toggleSidebar() { this.sidebarOpen = !this.sidebarOpen; }
+  logout() {
+    localStorage.removeItem('token');
+    this.router.navigateByUrl('/login');
+  }
 }

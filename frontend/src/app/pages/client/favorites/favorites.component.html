@@ -1,0 +1,38 @@
+<div class="space-y-4">
+  <div class="flex items-center gap-2">
+    <input [ngModel]="q()" (ngModelChange)="q.set($event)"
+           placeholder="Rechercher dans mes favoris…"
+           class="w-full sm:w-80 rounded-md border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-pink-600">
+  </div>
+
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+    <div *ngFor="let f of filtered()" class="rounded-xl border border-gray-200 bg-white overflow-hidden">
+      <img [src]="f.image" [alt]="f.name" class="h-36 w-full object-cover">
+      <div class="p-3">
+        <div class="font-semibold text-gray-900">{{ f.name }}</div>
+        <div class="text-xs text-gray-500">{{ f.category }} · {{ f.city }}</div>
+
+        <div class="mt-2 flex items-center gap-1">
+          <ng-container *ngFor="let filled of stars(f.rating)">
+            <svg *ngIf="filled" class="w-4 h-4 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
+              <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.802 2.036a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118L10 13.347l-2.985 2.136c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L3.38 8.72c-.783-.57-.38-1.81.588-1.81H7.43a1 1 0 00.95-.69l1.07-3.292z"/>
+            </svg>
+            <svg *ngIf="!filled" class="w-4 h-4 text-gray-300" viewBox="0 0 20 20" fill="currentColor">
+              <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.802 2.036a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118L10 13.347l-2.985 2.136c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L3.38 8.72c-.783-.57-.38-1.81.588-1.81H7.43a1 1 0 00.95-.69l1.07-3.292z"/>
+            </svg>
+          </ng-container>
+        </div>
+
+        <div class="mt-3 flex justify-end">
+          <button (click)="remove(f)"
+                  class="rounded-md border border-rose-300 px-3 py-1 text-xs text-rose-700 hover:bg-rose-50">
+            Retirer
+          </button>
+        </div>
+      </div>
+    </div>
+    <div *ngIf="filtered().length === 0" class="col-span-full text-center text-sm text-gray-500 py-6">
+      Aucun favori pour l’instant.
+    </div>
+  </div>
+</div>

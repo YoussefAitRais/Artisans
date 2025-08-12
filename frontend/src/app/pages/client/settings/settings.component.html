@@ -1,0 +1,70 @@
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+  <!-- Profil -->
+  <div class="rounded-xl border border-gray-200 bg-white p-4">
+    <div class="text-sm font-semibold mb-3">Profil</div>
+    <div class="space-y-3">
+      <div>
+        <label class="text-xs text-gray-600">Nom complet</label>
+        <input [ngModel]="name()" (ngModelChange)="name.set($event)"
+               class="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-pink-600">
+      </div>
+      <div>
+        <label class="text-xs text-gray-600">Email</label>
+        <input type="email" [ngModel]="email()" (ngModelChange)="email.set($event)"
+               class="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-pink-600">
+      </div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div>
+          <label class="text-xs text-gray-600">Téléphone</label>
+          <input [ngModel]="phone()" (ngModelChange)="phone.set($event)"
+                 class="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-pink-600">
+        </div>
+        <div>
+          <label class="text-xs text-gray-600">Ville</label>
+          <input [ngModel]="city()" (ngModelChange)="city.set($event)"
+                 class="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-pink-600">
+        </div>
+      </div>
+      <div class="pt-2">
+        <button (click)="saveProfile()"
+                class="rounded-md bg-pink-600 px-4 py-2 text-sm font-semibold text-white hover:bg-pink-700">
+          Enregistrer
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mot de passe -->
+  <div class="rounded-xl border border-gray-200 bg-white p-4">
+    <div class="text-sm font-semibold mb-3">Sécurité</div>
+    <div class="space-y-3">
+      <div>
+        <label class="text-xs text-gray-600">Mot de passe actuel</label>
+        <input type="password" [ngModel]="currentPwd()" (ngModelChange)="currentPwd.set($event)"
+               class="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-pink-600">
+      </div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div>
+          <label class="text-xs text-gray-600">Nouveau mot de passe</label>
+          <input type="password" [ngModel]="newPwd()" (ngModelChange)="newPwd.set($event)"
+                 class="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-pink-600">
+        </div>
+        <div>
+          <label class="text-xs text-gray-600">Confirmer</label>
+          <input type="password" [ngModel]="confirmPwd()" (ngModelChange)="confirmPwd.set($event)"
+                 class="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-pink-600">
+        </div>
+      </div>
+      <div class="flex items-center gap-2 pt-2">
+        <button (click)="changePassword()"
+                class="rounded-md bg-gray-900 px-4 py-2 text-sm font-semibold text-white hover:bg-black">
+          Changer le mot de passe
+        </button>
+        <button (click)="deleteAccount()"
+                class="rounded-md border border-rose-300 px-4 py-2 text-sm text-rose-700 hover:bg-rose-50">
+          Supprimer le compte
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
