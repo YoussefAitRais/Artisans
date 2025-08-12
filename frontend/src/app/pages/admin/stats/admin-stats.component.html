@@ -1,1 +1,70 @@
-<p>admin-stats works!</p>
+<div class="space-y-4">
+  <h2 class="text-lg font-semibold">Statistiques</h2>
+
+  <!-- cards -->
+  <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+    <div class="rounded-lg border border-gray-200 bg-white p-3">
+      <div class="text-xs text-gray-500">Utilisateurs</div>
+      <div class="mt-1 text-xl font-bold">{{ totals.users }}</div>
+    </div>
+    <div class="rounded-lg border border-green-200 bg-white p-3">
+      <div class="text-xs text-gray-500">Artisans</div>
+      <div class="mt-1 text-xl font-bold text-green-600">{{ totals.artisans }}</div>
+    </div>
+    <div class="rounded-lg border border-amber-200 bg-white p-3">
+      <div class="text-xs text-gray-500">Catégories</div>
+      <div class="mt-1 text-xl font-bold text-amber-600">{{ totals.categories }}</div>
+    </div>
+    <div class="rounded-lg border border-sky-200 bg-white p-3">
+      <div class="text-xs text-gray-500">Avis</div>
+      <div class="mt-1 text-xl font-bold text-sky-600">{{ totals.reviews }}</div>
+    </div>
+  </div>
+
+  <!-- bar chart -->
+  <div class="rounded-lg border border-gray-200 bg-white p-3">
+    <div class="mb-2 text-sm font-semibold">Demandes / mois</div>
+    <div class="h-40 relative">
+      <div class="absolute inset-0 grid grid-rows-4">
+        <div class="border-t border-dashed border-gray-200"></div>
+        <div class="border-t border-dashed border-gray-200"></div>
+        <div class="border-t border-dashed border-gray-200"></div>
+        <div class="border-t border-dashed border-gray-200"></div>
+      </div>
+      <div class="flex h-full items-end gap-2">
+        <ng-container *ngFor="let val of orders(); let i = index">
+          <div class="flex flex-col items-center">
+            <div class="w-5 rounded-t-md bg-pink-500" [style.height.%]="(val / maxY) * 100"></div>
+            <div class="mt-1 text-[10px] text-gray-500">{{ months[i] }}</div>
+          </div>
+        </ng-container>
+      </div>
+    </div>
+  </div>
+
+  <!-- line chart (مصغّر) -->
+  <div class="rounded-lg border border-gray-200 bg-white p-3">
+    <div class="mb-2 text-sm font-semibold">Inscriptions / mois</div>
+    <svg viewBox="0 0 300 100" class="w-full">
+      <!-- grid -->
+      <g stroke="#e5e7eb">
+        <line *ngFor="let y of [20,40,60,80]"
+              [attr.x1]="0" [attr.y1]="y"
+              [attr.x2]="300" [attr.y2]="y"
+              stroke-dasharray="4 4" />
+      </g>
+
+      <!-- ✅ استعمل النقاط المحسوبة -->
+      <polyline [attr.points]="points()" fill="none" stroke="#06b6d4" stroke-width="2"></polyline>
+
+      <!-- النقاط والتسميات -->
+      <ng-container *ngFor="let v of signups(); let i = index">
+        <circle [attr.cx]="cx(i)" [attr.cy]="cy(v)" r="2" fill="#06b6d4"></circle>
+        <text [attr.x]="cx(i)" [attr.y]="95" text-anchor="middle" class="fill-gray-500 text-[8px]">
+          {{ months[i] }}
+        </text>
+      </ng-container>
+    </svg>
+  </div>
+
+</div>
