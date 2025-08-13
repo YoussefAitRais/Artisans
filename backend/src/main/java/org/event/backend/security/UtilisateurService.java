@@ -1,7 +1,7 @@
-package org.event.backend.Security;
+package org.event.backend.security;
 
 
-import org.event.backend.Entity.Utilisateur;
+import org.event.backend.entity.Utilisateur;
 import org.event.backend.repository.UtilisateurRepository;
 import org.springframework.stereotype.Service;
 
@@ -39,7 +39,7 @@ public class UtilisateurService {
         return utilisateurRepository.findById(id).map(existing -> {
             existing.setNom(updatedUtilisateur.getNom());
             existing.setEmail(updatedUtilisateur.getEmail());
-            existing.setPassword(updatedUtilisateur.getPassword());
+            existing.setPasswordHash(updatedUtilisateur.getPasswordHash());
             existing.setRole(updatedUtilisateur.getRole());
             return utilisateurRepository.save(existing);
         });

@@ -1,8 +1,9 @@
-package org.event.backend.Controller;
+package org.event.backend.controller;
 
 
-import org.event.backend.Entity.Utilisateur;
-import org.event.backend.Security.UtilisateurService;
+import jakarta.validation.Valid;
+import org.event.backend.entity.Utilisateur;
+import org.event.backend.security.UtilisateurService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -19,7 +20,7 @@ public class UtilisateurController {
     }
 
     @PostMapping("/Register")
-    public ResponseEntity Register(@RequestBody Utilisateur utilisateur) {
+    public ResponseEntity Register(@Valid @RequestBody Utilisateur utilisateur) {
         Utilisateur saved = utilisateurService.save(utilisateur);
         return ResponseEntity.ok().body(saved);
     }

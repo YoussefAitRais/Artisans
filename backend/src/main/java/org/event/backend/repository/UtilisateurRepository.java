@@ -1,6 +1,6 @@
 package org.event.backend.repository;
 
-import org.event.backend.Entity.Utilisateur;
+import org.event.backend.entity.Utilisateur;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;
