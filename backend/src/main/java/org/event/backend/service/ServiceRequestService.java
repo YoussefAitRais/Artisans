@@ -4,7 +4,7 @@ import org.event.backend.dto.ServiceRequestCreateRequest;
 import org.event.backend.dto.ServiceRequestResponse;
 import org.event.backend.dto.ServiceRequestUpdateRequest;
 import org.event.backend.entity.*;
-import org.event.backend.repository.category.CategoryRepository;
+import org.event.backend.repository.CategoryRepository;
 import org.event.backend.repository.ServiceRequestRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;

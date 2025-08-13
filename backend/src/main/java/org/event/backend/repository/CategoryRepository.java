@@ -1,4 +1,4 @@
-package org.event.backend.repository.category;
+package org.event.backend.repository;
 
 import org.event.backend.entity.Category;
 import org.springframework.data.jpa.repository.JpaRepository;

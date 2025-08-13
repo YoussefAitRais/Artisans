@@ -4,7 +4,7 @@ import org.event.backend.dto.category.CategoryCreateRequest;
 import org.event.backend.dto.category.CategoryResponse;
 import org.event.backend.dto.category.CategoryUpdateRequest;
 import org.event.backend.entity.Category;
-import org.event.backend.repository.category.CategoryRepository;
+import org.event.backend.repository.CategoryRepository;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
