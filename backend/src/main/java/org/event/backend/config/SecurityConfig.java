@@ -54,7 +54,8 @@ public class SecurityConfig {
                         .requestMatchers("/api/quotes/**").hasRole("ARTISAN")
                         .requestMatchers("/api/engagements/**").hasAnyRole("CLIENT","ARTISAN")
                         .requestMatchers("/api/conversations/**").hasAnyRole("CLIENT","ARTISAN")
-
+                        .requestMatchers(HttpMethod.GET, "/api/artisans/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/media/**").permitAll()
 
                         .anyRequest().authenticated()
                 )
