@@ -3,6 +3,7 @@ package org.event.backend.config;
 import org.event.backend.service.JwtAuthenticationFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -48,6 +49,13 @@ public class SecurityConfig {
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .requestMatchers("/api/artisan/**").hasRole("ARTISAN")
                         .requestMatchers("/api/client/**").hasRole("CLIENT")
+                        .requestMatchers(HttpMethod.POST, "/api/requests/**/quotes").hasRole("ARTISAN")
+                        .requestMatchers(HttpMethod.GET,  "/api/requests/**/quotes").hasRole("CLIENT")
+                        .requestMatchers("/api/quotes/**").hasRole("ARTISAN")
+                        .requestMatchers("/api/engagements/**").hasAnyRole("CLIENT","ARTISAN")
+                        .requestMatchers("/api/conversations/**").hasAnyRole("CLIENT","ARTISAN")
+
+
                         .anyRequest().authenticated()
                 )
                 .authenticationProvider(authenticationProvider())
