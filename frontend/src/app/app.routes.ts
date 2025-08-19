@@ -1,8 +1,8 @@
+// src/app/app.routes.ts
 import { Routes } from '@angular/router';
 
+// Public
 import { HomeComponent } from './home/home.component';
-
-// Auth
 import { RegisterComponent } from './register/register.component';
 import { LoginComponent } from './login/login.component';
 
@@ -21,16 +21,19 @@ import { RequestsComponent } from './pages/client/requests/requests.component';
 import { FavoritesComponent } from './pages/client/favorites/favorites.component';
 import { SettingsComponent } from './pages/client/settings/settings.component';
 
+// Guards
+import { AuthGuard } from './guards/auth.guard';
+
 export const routes: Routes = [
   // Public
   { path: '', component: HomeComponent, pathMatch: 'full' },
   { path: 'register', component: RegisterComponent },
   { path: 'login', component: LoginComponent },
 
-  // Admin
   {
     path: 'admin',
     component: AdminDashboardComponent,
+    canActivate: [AuthGuard],
     children: [
       { path: '', redirectTo: 'home', pathMatch: 'full' },
       { path: 'home', component: AdminHomeComponent },
@@ -41,10 +44,10 @@ export const routes: Routes = [
     ]
   },
 
-  // Client
   {
     path: 'client',
     component: ClientDashboardComponent,
+    canActivate: [AuthGuard],
     children: [
       { path: '', redirectTo: 'home', pathMatch: 'full' },
       { path: 'home', component: ClientHomeComponent },
