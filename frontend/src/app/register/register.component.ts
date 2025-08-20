@@ -1,49 +1,101 @@
-// src/app/register/register.component.ts
-import { Component } from '@angular/core';
-import { FormsModule, NgForm } from '@angular/forms';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule, NgForm } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
+import { HttpClient } from '@angular/common/http';
+
 import { AuthService, RegisterRequest, AuthSession } from '../services/auth/auth.service';
 
 type RoleChoice = 'CLIENT' | 'ARTISAN';
 
-export type registerForm = {
+interface Category {
+  id: number;
+  name: string;
+  description?: string;
+}
+
+// لوكال تايب لطلب الحرفي (ماشي ضروري يكون مصدّر من الخدمة)
+interface RegisterArtisanRequest {
+  email: string;
+  password: string;
+  nom: string;
+  prenom: string;
+  metier: string;
+  localisation?: string;
+  description?: string;
+  categoryId: number;
+}
+
+type RegisterFormModel = {
+  // common
   firstName: string;
   lastName: string;
   email: string;
   password: string;
   confirmerPassword: string;
-  role: RoleChoice | ''; // use CLIENT | ARTISAN to match backend
+  role: RoleChoice | '';
+
+  // artisan-only
+  categoryId?: number | null;
+  metier?: string;
+  localisation?: string;
+  description?: string;
 };
 
 @Component({
   selector: 'app-register',
   standalone: true,
-  imports: [FormsModule, CommonModule, RouterLink],
+  imports: [CommonModule, FormsModule, RouterLink],
   templateUrl: './register.component.html',
   styleUrls: ['./register.component.css'],
 })
-export class RegisterComponent {
-  registerObj: registerForm = {
+export class RegisterComponent implements OnInit {
+  // ------------ state ------------
+  registerObj: RegisterFormModel = {
     firstName: '',
     lastName: '',
     email: '',
     password: '',
     confirmerPassword: '',
-    role: '' // 'CLIENT' or 'ARTISAN'
+    role: '',
+
+    categoryId: null,
+    metier: '',
+    localisation: '',
+    description: '',
   };
 
+  categories: Category[] = [];
   loading = false;
   errorMsg = '';
 
-  constructor(private auth: AuthService, private router: Router) {}
+  // ------------ services ------------
+  private auth = inject(AuthService);
+  private http = inject(HttpClient);
+  private router = inject(Router);
 
-  setRole(role: RoleChoice) {
-    this.registerObj.role = role;
+  private readonly API_BASE = 'http://localhost:8091';
+
+  // ------------ lifecycle ------------
+  ngOnInit() {
+    // نحمّلو الكاتيغوريات غير إلا اختار ARTISAN باش ما نضربوش API بلا فائدة
+    // ولكن يمكن حتى نحمّلوهم مباشرة من الأول. هنا غادي نجيبهم دابا حيث ما عندناش بزاف.
+    this.loadCategories();
   }
 
-  // Map form → backend DTO (nom/prenom instead of firstName/lastName)
-  private toRegisterRequest(): RegisterRequest {
+  // ------------ helpers ------------
+  setRole(role: RoleChoice) {
+    this.registerObj.role = role;
+    // ملي يتحول الدور لـ CLIENT نفضيو حقول الحرفي باش ما يبقاوش مطلوبين
+    if (role === 'CLIENT') {
+      this.registerObj.categoryId = null;
+      this.registerObj.metier = '';
+      this.registerObj.localisation = '';
+      this.registerObj.description = '';
+    }
+  }
+
+  private toClientPayload(): RegisterRequest {
     return {
       email: this.registerObj.email.trim(),
       password: this.registerObj.password,
@@ -52,6 +104,35 @@ export class RegisterComponent {
     };
   }
 
+  private toArtisanPayload(): RegisterArtisanRequest {
+    return {
+      email: this.registerObj.email.trim(),
+      password: this.registerObj.password,
+      nom: this.registerObj.firstName.trim(),
+      prenom: this.registerObj.lastName.trim(),
+      metier: (this.registerObj.metier || '').trim(),
+      localisation: (this.registerObj.localisation || '').trim() || undefined,
+      description: (this.registerObj.description || '').trim() || undefined,
+      categoryId: Number(this.registerObj.categoryId),
+    };
+  }
+
+  private loadCategories() {
+    // GET /api/categories (paged). كنحيدو content إلا رجعات Paged.
+    this.http.get<any>(`${this.API_BASE}/api/categories`).subscribe({
+      next: (res) => {
+        this.categories = Array.isArray(res) ? res
+          : Array.isArray(res?.content) ? res.content
+            : [];
+      },
+      error: () => {
+        // ماشي fatal لواجهة التسجيل، نقدر نبيّن مساج صغير ونخليه يعاود من بعد
+        this.categories = [];
+      },
+    });
+  }
+
+  // ------------ submit ------------
   onRegisterSubmit(form: NgForm) {
     this.errorMsg = '';
 
@@ -59,37 +140,54 @@ export class RegisterComponent {
       this.errorMsg = 'Please choose a role: CLIENT or ARTISAN.';
       return;
     }
+
     if (!form.valid) {
       this.errorMsg = 'Please fill all required fields.';
       return;
     }
+
     if (this.registerObj.password !== this.registerObj.confirmerPassword) {
       this.errorMsg = 'Passwords do not match.';
       return;
     }
 
-    const payload = this.toRegisterRequest();
+    // تحقق بسيط لحقول الحرفي
+    if (this.registerObj.role === 'ARTISAN') {
+      if (!this.registerObj.categoryId) {
+        this.errorMsg = 'Please choose a category.';
+        return;
+      }
+      if (!this.registerObj.metier || !this.registerObj.metier.trim()) {
+        this.errorMsg = 'Please enter your craft (metier).';
+        return;
+      }
+    }
+
     this.loading = true;
 
-    const call$ = this.registerObj.role === 'CLIENT'
-      ? this.auth.registerClient(payload)
-      : this.auth.registerArtisan(payload);
+    const req$ =
+      this.registerObj.role === 'CLIENT'
+        ? this.auth.registerClient(this.toClientPayload())
+        : this.auth.registerArtisan(this.toArtisanPayload() as any);
 
-    call$.subscribe({
+    req$.subscribe({
       next: (session: AuthSession) => {
-        // Auto-redirect by role
+        // redirect by role
         if (session.role === 'ADMIN') {
           this.router.navigate(['/admin']);
         } else if (session.role === 'ARTISAN') {
-          // عندك لاحقًا Dashboard ديال الحرفي، مؤقتًا نمشيو للـ client باش نكمّلو
-          this.router.navigate(['/client']);
+          this.router.navigate(['/client']); // إلى أن تضيف داشبورد الحرفي
         } else {
           this.router.navigate(['/client']);
         }
       },
       error: (err) => {
         this.loading = false;
-        this.errorMsg = err?.error?.message || 'Registration failed';
+        // backend كيصيفط message فـ body عندنا
+        this.errorMsg =
+          err?.error?.message ||
+          err?.message ||
+          'Registration failed. Please try again.';
         console.error('Register error', err);
       },
       complete: () => (this.loading = false),
