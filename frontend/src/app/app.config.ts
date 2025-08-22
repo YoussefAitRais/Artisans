@@ -1,19 +1,21 @@
 // src/app/app.config.ts
 import { ApplicationConfig } from '@angular/core';
 import { provideRouter } from '@angular/router';
-import { provideHttpClient, withInterceptors } from '@angular/common/http';
+import {provideHttpClient, withFetch, withInterceptors} from '@angular/common/http';
 import { provideAnimations } from '@angular/platform-browser/animations';
 import { routes } from './app.routes';
 
 // <-- هذا هو الإنترسيبتور لي كتبنا
 import { authInterceptor } from './interceptors/auth/auth-interceptor.interceptor';
+import {provideClientHydration} from "@angular/platform-browser";
 
 export const appConfig: ApplicationConfig = {
   providers: [
     provideRouter(routes),
     provideHttpClient(
-      withInterceptors([authInterceptor])  // <-- مهم بزاف
+      withFetch(),                 // <-- مهمّة الرسالة NG02801
+      withInterceptors([authInterceptor])
     ),
-    provideAnimations(),
+    provideClientHydration()
   ]
 };

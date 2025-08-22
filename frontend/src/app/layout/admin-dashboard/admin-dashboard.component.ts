@@ -17,8 +17,10 @@ export class AdminDashboardComponent {
     this.sidebarOpen = !this.sidebarOpen;
   }
 
-  logout(): void {
+  logout() {
     localStorage.removeItem('token');
-    this.router.navigateByUrl('/');
+    localStorage.removeItem('role');
+    this.router.navigateByUrl('/login');
   }
+
 }

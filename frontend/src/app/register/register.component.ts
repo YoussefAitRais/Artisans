@@ -14,7 +14,6 @@ interface Category {
   description?: string;
 }
 
-// لوكال تايب لطلب الحرفي (ماشي ضروري يكون مصدّر من الخدمة)
 interface RegisterArtisanRequest {
   email: string;
   password: string;
@@ -78,15 +77,13 @@ export class RegisterComponent implements OnInit {
 
   // ------------ lifecycle ------------
   ngOnInit() {
-    // نحمّلو الكاتيغوريات غير إلا اختار ARTISAN باش ما نضربوش API بلا فائدة
-    // ولكن يمكن حتى نحمّلوهم مباشرة من الأول. هنا غادي نجيبهم دابا حيث ما عندناش بزاف.
+
     this.loadCategories();
   }
 
   // ------------ helpers ------------
   setRole(role: RoleChoice) {
     this.registerObj.role = role;
-    // ملي يتحول الدور لـ CLIENT نفضيو حقول الحرفي باش ما يبقاوش مطلوبين
     if (role === 'CLIENT') {
       this.registerObj.categoryId = null;
       this.registerObj.metier = '';
@@ -118,7 +115,6 @@ export class RegisterComponent implements OnInit {
   }
 
   private loadCategories() {
-    // GET /api/categories (paged). كنحيدو content إلا رجعات Paged.
     this.http.get<any>(`${this.API_BASE}/api/categories`).subscribe({
       next: (res) => {
         this.categories = Array.isArray(res) ? res
@@ -126,7 +122,6 @@ export class RegisterComponent implements OnInit {
             : [];
       },
       error: () => {
-        // ماشي fatal لواجهة التسجيل، نقدر نبيّن مساج صغير ونخليه يعاود من بعد
         this.categories = [];
       },
     });
@@ -151,7 +146,6 @@ export class RegisterComponent implements OnInit {
       return;
     }
 
-    // تحقق بسيط لحقول الحرفي
     if (this.registerObj.role === 'ARTISAN') {
       if (!this.registerObj.categoryId) {
         this.errorMsg = 'Please choose a category.';
@@ -176,14 +170,13 @@ export class RegisterComponent implements OnInit {
         if (session.role === 'ADMIN') {
           this.router.navigate(['/admin']);
         } else if (session.role === 'ARTISAN') {
-          this.router.navigate(['/client']); // إلى أن تضيف داشبورد الحرفي
+          this.router.navigate(['/client']);
         } else {
           this.router.navigate(['/client']);
         }
       },
       error: (err) => {
         this.loading = false;
-        // backend كيصيفط message فـ body عندنا
         this.errorMsg =
           err?.error?.message ||
           err?.message ||

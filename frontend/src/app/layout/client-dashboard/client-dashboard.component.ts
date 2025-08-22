@@ -17,6 +17,8 @@ export class ClientDashboardComponent {
   toggleSidebar() { this.sidebarOpen = !this.sidebarOpen; }
   logout() {
     localStorage.removeItem('token');
+    localStorage.removeItem('role');
     this.router.navigateByUrl('/login');
   }
+
 }
