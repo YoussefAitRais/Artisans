@@ -1,87 +1,120 @@
-import { Injectable, inject, PLATFORM_ID } from '@angular/core';
-import { isPlatformBrowser } from '@angular/common';
+import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpResponse } from '@angular/common/http';
-import { map, tap } from 'rxjs/operators';
-import { Observable } from 'rxjs';
+import { Observable, map, tap } from 'rxjs';
 
-type Role = 'ADMIN' | 'CLIENT' | 'ARTISAN';
+// --------- Types ---------
+export type Role = 'ADMIN' | 'CLIENT' | 'ARTISAN';
 
-export interface LoginRequest { email: string; password: string; }
-export interface RegisterRequest { email: string; password: string; nom: string; prenom: string; }
-export interface AuthResponse {
-  token?: string; id?: number; email: string; role: Role | string; nom: string; prenom: string;
+export interface LoginRequest {
+  email: string;
+  password: string;
 }
+
+export interface ClientRegisterRequest {
+  email: string;
+  password: string;
+  nom: string;
+  prenom: string;
+}
+
+export interface ArtisanRegisterRequest {
+  email: string;
+  password: string;
+  nom: string;
+  prenom: string;
+  // حقول إضافية للحرفي
+  categoryId: number;
+  metier?: string;
+  localisation?: string;
+  description?: string;
+}
+
+export interface AuthResponse {
+  token?: string;
+  id?: number;
+  email: string;
+  role: Role | string;
+  nom?: string;
+  prenom?: string;
+}
+
 export interface AuthSession {
-  token: string; role: Role | null; email?: string; id?: number; nom?: string; prenom?: string;
+  token: string;
+  role: Role | null;
+  id?: number;
+  email?: string;
+  nom?: string;
+  prenom?: string;
 }
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private readonly API_BASE = 'http://localhost:8091';
+
   private readonly TOKEN_KEY = 'token';
   private readonly ROLE_KEY  = 'role';
 
-  private platformId = inject(PLATFORM_ID);
-  private isBrowser = isPlatformBrowser(this.platformId);
-
-  // تخزين مؤقّت فالذاكرة ملي نكونو فـ SSR
-  private memoryToken: string | null = null;
-  private memoryRole: Role | null = null;
-
   constructor(private http: HttpClient) {}
 
+  // ----------------- Auth Calls -----------------
+
   login(body: LoginRequest): Observable<AuthSession> {
-    return this.http.post<AuthResponse>(`${this.API_BASE}/api/auth/login`, body, { observe: 'response' })
-      .pipe(
-        map((res) => this.buildSessionFromResponse(res)),
-        tap((session) => this.saveSession(session.token, session.role || undefined))
-      );
+    return this.http.post<AuthResponse>(
+      `${this.API_BASE}/api/auth/login`,
+      body,
+      { observe: 'response' }
+    ).pipe(
+      map((res: HttpResponse<AuthResponse>) => this.buildSessionFromResponse(res)),
+      tap((session: AuthSession) => this.saveSession(session.token, session.role || undefined))
+    );
   }
 
-  registerClient(body: RegisterRequest): Observable<AuthSession> {
-    return this.http.post<AuthResponse>(`${this.API_BASE}/api/auth/register-client`, body, { observe: 'response' })
-      .pipe(
-        map((res) => this.buildSessionFromResponse(res)),
-        tap((session) => this.saveSession(session.token, session.role || undefined))
-      );
+  registerClient(body: ClientRegisterRequest): Observable<AuthSession> {
+    return this.http.post<AuthResponse>(
+      `${this.API_BASE}/api/auth/register-client`,
+      body,
+      { observe: 'response' }
+    ).pipe(
+      map((res: HttpResponse<AuthResponse>) => this.buildSessionFromResponse(res)),
+      tap((session: AuthSession) => this.saveSession(session.token, session.role || undefined))
+    );
   }
 
-  registerArtisan(body: RegisterRequest): Observable<AuthSession> {
-    return this.http.post<AuthResponse>(`${this.API_BASE}/api/auth/register-artisan`, body, { observe: 'response' })
-      .pipe(
-        map((res) => this.buildSessionFromResponse(res)),
-        tap((session) => this.saveSession(session.token, session.role || undefined))
-      );
+  registerArtisan(body: ArtisanRegisterRequest): Observable<AuthSession> {
+    return this.http.post<AuthResponse>(
+      `${this.API_BASE}/api/auth/register-artisan`,
+      body,
+      { observe: 'response' }
+    ).pipe(
+      map((res: HttpResponse<AuthResponse>) => this.buildSessionFromResponse(res)),
+      tap((session: AuthSession) => this.saveSession(session.token, session.role || undefined))
+    );
   }
 
-  // ---------- Session ----------
-  saveSession(token: string, role?: string) {
-    if (this.isBrowser) {
-      localStorage.setItem(this.TOKEN_KEY, token);
-      if (role) localStorage.setItem(this.ROLE_KEY, role as Role);
-    } else {
-      this.memoryToken = token;
-      this.memoryRole = (role as Role) ?? (this.decodeJwt(token)?.role as Role) ?? null;
-    }
+  // ----------------- Session Helpers -----------------
+
+  saveSession(token: string, role?: string | Role) {
+    localStorage.setItem(this.TOKEN_KEY, token);
+
+    const finalRole: Role | null =
+      (role as Role) ||
+      (this.getClaim<string>('role') as Role) ||
+      null;
+
+    if (finalRole) localStorage.setItem(this.ROLE_KEY, finalRole);
   }
 
   logout() {
-    if (this.isBrowser) {
-      localStorage.removeItem(this.TOKEN_KEY);
-      localStorage.removeItem(this.ROLE_KEY);
-    }
-    this.memoryToken = null;
-    this.memoryRole = null;
+    localStorage.removeItem(this.TOKEN_KEY);
+    localStorage.removeItem(this.ROLE_KEY);
   }
 
   getToken(): string | null {
-    return this.isBrowser ? localStorage.getItem(this.TOKEN_KEY) : this.memoryToken;
+    return localStorage.getItem(this.TOKEN_KEY);
   }
 
   getRole(): Role | null {
-    return this.isBrowser
-      ? (localStorage.getItem(this.ROLE_KEY) as Role) || null
-      : this.memoryRole;
+    return (localStorage.getItem(this.ROLE_KEY) as Role) || null;
   }
 
   isLoggedIn(): boolean {
@@ -95,8 +128,11 @@ export class AuthService {
   getCurrentUser() {
     const token = this.getToken();
     if (!token) return null;
-    const payload = this.decodeJwt(token) || {};
-    return { id: payload['id'], email: payload['sub'], role: payload['role'] as Role };
+    return {
+      id: this.getClaim<number>('id'),
+      email: this.getClaim<string>('sub'),
+      role: this.getClaim<Role>('role'),
+    };
   }
 
   getAuthHeaders(): HttpHeaders {
@@ -104,16 +140,21 @@ export class AuthService {
     return new HttpHeaders(token ? { Authorization: `Bearer ${token}` } : {});
   }
 
-  // ---------- Utils ----------
+  // ----------------- Private utils -----------------
+
   private buildSessionFromResponse(res: HttpResponse<AuthResponse>): AuthSession {
     const body = res.body || ({} as AuthResponse);
-    let token = body.token;
 
+    // token من body أو من Header
+    let token = body.token;
     if (!token) {
       const auth = res.headers.get('Authorization'); // "Bearer xxx"
       const xAuth = res.headers.get('X-Auth-Token');
-      if (auth && auth.toLowerCase().startsWith('bearer ')) token = auth.substring(7);
-      else if (xAuth) token = xAuth;
+      if (auth && auth.toLowerCase().startsWith('bearer ')) {
+        token = auth.substring(7);
+      } else if (xAuth) {
+        token = xAuth;
+      }
     }
     if (!token) throw new Error('No token returned from server');
 
@@ -130,13 +171,19 @@ export class AuthService {
     };
   }
 
+  private getClaim<T = unknown>(name: string): T | null {
+    const token = this.getToken();
+    if (!token) return null;
+    const payload = this.decodeJwt(token);
+    return (payload && (payload as any)[name]) ?? null;
+  }
+
   private decodeJwt(token: string): any | null {
     try {
       const [, payload] = token.split('.');
-      // فـ SSR ماكاينش atob
-      if (typeof atob === 'undefined') return null;
       const json = atob(payload.replace(/-/g, '+').replace(/_/g, '/'));
-      return JSON.parse(decodeURIComponent(escape(json)));
+      // decodeURIComponent(escape(...)) كان كيدير مشاكل فبعض الحالات، نخلوها بسيطة
+      return JSON.parse(json);
     } catch {
       return null;
     }

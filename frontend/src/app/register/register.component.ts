@@ -4,7 +4,12 @@ import { FormsModule, NgForm } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 
-import { AuthService, RegisterRequest, AuthSession } from '../services/auth/auth.service';
+import {
+  AuthService,
+  ClientRegisterRequest,
+  ArtisanRegisterRequest,
+  AuthSession
+} from '../services/auth/auth.service';
 
 type RoleChoice = 'CLIENT' | 'ARTISAN';
 
@@ -14,15 +19,9 @@ interface Category {
   description?: string;
 }
 
-interface RegisterArtisanRequest {
-  email: string;
-  password: string;
-  nom: string;
-  prenom: string;
-  metier: string;
-  localisation?: string;
-  description?: string;
-  categoryId: number;
+interface Page<T> {
+  content: T[];
+  totalElements: number;
 }
 
 type RegisterFormModel = {
@@ -35,7 +34,7 @@ type RegisterFormModel = {
   role: RoleChoice | '';
 
   // artisan-only
-  categoryId?: number | null;
+  categoryId: number | null;
   metier?: string;
   localisation?: string;
   description?: string;
@@ -57,7 +56,6 @@ export class RegisterComponent implements OnInit {
     password: '',
     confirmerPassword: '',
     role: '',
-
     categoryId: null,
     metier: '',
     localisation: '',
@@ -77,22 +75,25 @@ export class RegisterComponent implements OnInit {
 
   // ------------ lifecycle ------------
   ngOnInit() {
-
+    // نقدر نحمّلها مباشرة أو بعد اختيار ARTISAN
     this.loadCategories();
   }
 
   // ------------ helpers ------------
   setRole(role: RoleChoice) {
     this.registerObj.role = role;
+
     if (role === 'CLIENT') {
       this.registerObj.categoryId = null;
       this.registerObj.metier = '';
       this.registerObj.localisation = '';
       this.registerObj.description = '';
+    } else if (role === 'ARTISAN' && this.categories.length === 0) {
+      this.loadCategories();
     }
   }
 
-  private toClientPayload(): RegisterRequest {
+  private toClientPayload(): ClientRegisterRequest {
     return {
       email: this.registerObj.email.trim(),
       password: this.registerObj.password,
@@ -101,7 +102,7 @@ export class RegisterComponent implements OnInit {
     };
   }
 
-  private toArtisanPayload(): RegisterArtisanRequest {
+  private toArtisanPayload(): ArtisanRegisterRequest {
     return {
       email: this.registerObj.email.trim(),
       password: this.registerObj.password,
@@ -115,15 +116,14 @@ export class RegisterComponent implements OnInit {
   }
 
   private loadCategories() {
-    this.http.get<any>(`${this.API_BASE}/api/categories`).subscribe({
+    this.http.get<Page<Category>>(`${this.API_BASE}/api/categories`).subscribe({
       next: (res) => {
-        this.categories = Array.isArray(res) ? res
-          : Array.isArray(res?.content) ? res.content
-            : [];
+        this.categories = res?.content ?? [];
       },
-      error: () => {
+      error: (e) => {
+        console.error('Categories load failed', e);
         this.categories = [];
-      },
+      }
     });
   }
 
@@ -147,7 +147,7 @@ export class RegisterComponent implements OnInit {
     }
 
     if (this.registerObj.role === 'ARTISAN') {
-      if (!this.registerObj.categoryId) {
+      if (this.registerObj.categoryId == null) {
         this.errorMsg = 'Please choose a category.';
         return;
       }
@@ -162,11 +162,10 @@ export class RegisterComponent implements OnInit {
     const req$ =
       this.registerObj.role === 'CLIENT'
         ? this.auth.registerClient(this.toClientPayload())
-        : this.auth.registerArtisan(this.toArtisanPayload() as any);
+        : this.auth.registerArtisan(this.toArtisanPayload());
 
     req$.subscribe({
       next: (session: AuthSession) => {
-        // redirect by role
         if (session.role === 'ADMIN') {
           this.router.navigate(['/admin']);
         } else if (session.role === 'ARTISAN') {

@@ -1,18 +1,15 @@
-import { Component, computed, signal } from '@angular/core';
+import { Component, OnInit, computed, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import {
+  CategoryApi,
+  CategoryDto,
+  ClientApi,
+  Page,
+  ServiceRequestResponse
+} from '../../../services/api/client-api.service';
 
-type ReqStatus = 'EN_ATTENTE' | 'ACCEPTEE' | 'REFUSEE' | 'TERMINEE';
-
-interface ClientRequest {
-  id: number;
-  title: string;
-  category: string;
-  city: string;
-  status: ReqStatus;
-  createdAt: string; // ISO
-  description: string;
-}
+type UiStatus = 'ALL' | 'PENDING' | 'RESPONDED' | 'ACCEPTED' | 'REJECTED' | 'CANCELLED' | 'COMPLETED';
 
 @Component({
   selector: 'app-requests',
@@ -20,29 +17,56 @@ interface ClientRequest {
   imports: [CommonModule, FormsModule],
   templateUrl: './requests.component.html'
 })
-export class RequestsComponent {
-  // --- Mock data ---
-  requests = signal<ClientRequest[]>([
-    { id: 501, title: 'Réparation clim', category: 'Climatisation', city: 'Casablanca', status: 'EN_ATTENTE', createdAt: '2025-08-10', description: 'Clim fait du bruit et ne refroidit plus.' },
-    { id: 502, title: 'Plomberie cuisine', category: 'Plomberie',    city: 'Rabat',      status: 'ACCEPTEE',   createdAt: '2025-08-07', description: 'Fuite sous l’évier, besoin d’un remplacement.' },
-    { id: 503, title: 'Peinture salon',   category: 'Peinture',      city: 'Fès',        status: 'EN_ATTENTE', createdAt: '2025-08-01', description: 'Peinture murale couleur claire, 20 m².' },
-    { id: 504, title: 'Panne électrique', category: 'Électricité',   city: 'Marrakech',  status: 'REFUSEE',    createdAt: '2025-07-28', description: 'Prises ne fonctionnent plus dans le salon.' },
-    { id: 505, title: 'Entretien clim',   category: 'Climatisation', city: 'Casablanca', status: 'TERMINEE',   createdAt: '2025-07-15', description: 'Nettoyage et recharge gaz.' },
-  ]);
-
-  // --- Filters / sort / paging ---
-  q = signal('');
-  status = signal<ReqStatus | 'ALL'>('ALL');
-  city = signal<'ALL' | string>('ALL');
+export class RequestsComponent implements OnInit {
+  // paging/sort
+  page = signal(1);
+  size = signal(5);
   sortKey = signal<'createdAt' | 'title' | 'city' | 'status'>('createdAt');
   sortDir = signal<'asc' | 'desc'>('desc');
 
-  page = signal(1);
-  size = signal(5);
+  // filters (client-side)
+  q = signal('');
+  status = signal<UiStatus>('ALL');
+  city = signal<'ALL' | string>('ALL');
+
+  // data
+  pageData = signal<Page<ServiceRequestResponse> | null>(null);
+  list = signal<ServiceRequestResponse[]>([]);
+
+  // categories map
+  categories = signal<CategoryDto[]>([]);
+  private nameById = new Map<number, string>();
+
+  // modal
+  show = signal(false);
+  current = signal<ServiceRequestResponse | null>(null);
+
+  constructor(private api: ClientApi, private catApi: CategoryApi) {}
+
+  ngOnInit(): void {
+    this.catApi.getAll(0, 200, 'name,asc').subscribe({
+      next: (p) => {
+        this.categories.set(p.content);
+        this.nameById.clear();
+        p.content.forEach(c => this.nameById.set(c.id, c.name));
+      }
+    });
+    this.load();
+  }
+
+  load() {
+    const sort = `${this.sortKey()},${this.sortDir()}`;
+    this.api.myRequests(this.page() - 1, this.size(), sort).subscribe({
+      next: (res) => {
+        this.pageData.set(res);
+        this.list.set(res.content);
+      }
+    });
+  }
 
   cities = computed(() => {
-    const set = new Set(this.requests().map(r => r.city));
-    return Array.from(set).sort();
+    const s = new Set(this.list().map(r => r.city || '').filter(Boolean));
+    return Array.from(s).sort();
   });
 
   filtered = computed(() => {
@@ -50,33 +74,22 @@ export class RequestsComponent {
     const st = this.status();
     const c = this.city();
 
-    const arr = this.requests().filter(r => {
-      const matchText = !text || [r.title, r.category, r.city, r.description].join(' ').toLowerCase().includes(text);
+    return this.list().filter(r => {
+      const matchText = !text || [r.title, r.city, r.description].join(' ').toLowerCase().includes(text);
       const matchStatus = st === 'ALL' || r.status === st;
-      const matchCity = c === 'ALL' || r.city === c;
+      const matchCity = c === 'ALL' || (r.city || '').toLowerCase() === c.toLowerCase();
       return matchText && matchStatus && matchCity;
     });
-
-    const key = this.sortKey();
-    const dir = this.sortDir();
-    return arr.sort((a, b) => {
-      const av = (a as any)[key];
-      const bv = (b as any)[key];
-      if (av < bv) return dir === 'asc' ? -1 : 1;
-      if (av > bv) return dir === 'asc' ? 1 : -1;
-      return 0;
-    });
   });
 
-  totalPages = computed(() => Math.max(1, Math.ceil(this.filtered().length / this.size())));
-  paged = computed(() => {
-    const start = (this.page() - 1) * this.size();
-    return this.filtered().slice(start, start + this.size());
-  });
+  totalPages = computed(() => this.pageData()?.totalPages ?? 1);
+  paged = computed(() => this.filtered());
 
   setSort(k: 'createdAt' | 'title' | 'city' | 'status') {
     if (this.sortKey() === k) this.sortDir.set(this.sortDir() === 'asc' ? 'desc' : 'asc');
     else { this.sortKey.set(k); this.sortDir.set('asc'); }
+    this.page.set(1);
+    this.load();
   }
 
   reset() {
@@ -86,20 +99,50 @@ export class RequestsComponent {
     this.sortKey.set('createdAt');
     this.sortDir.set('desc');
     this.page.set(1);
+    this.load();
   }
 
-  prev() { this.page.set(Math.max(1, this.page() - 1)); }
-  next() { this.page.set(Math.min(this.totalPages(), this.page() + 1)); }
-  trackById = (_: number, r: ClientRequest) => r.id;
+  prev() { if (this.page() > 1) { this.page.set(this.page() - 1); this.load(); } }
+  next() { if (this.page() < this.totalPages()) { this.page.set(this.page() + 1); this.load(); } }
+  trackById = (_: number, r: ServiceRequestResponse) => r.id;
 
-  // modal
-  show = signal(false);
-  current = signal<ClientRequest | null>(null);
-  open(r: ClientRequest) { this.current.set(r); this.show.set(true); }
+  open(r: ServiceRequestResponse) { this.current.set(r); this.show.set(true); }
   close() { this.show.set(false); }
 
-  cancel(r: ClientRequest) {
+  cancel(r: ServiceRequestResponse) {
     if (!confirm(`Annuler la demande #${r.id} ?`)) return;
-    this.requests.update(list => list.map(x => x.id === r.id ? { ...x, status: 'REFUSEE' } : x));
+    this.api.cancelRequest(r.id).subscribe({ next: () => this.load() });
+  }
+
+  delete(r: ServiceRequestResponse) {
+    if (!confirm(`Supprimer la demande #${r.id} ?`)) return;
+    this.api.deleteRequest(r.id).subscribe({ next: () => this.load() });
+  }
+
+  categoryName(id?: number | null) {
+    if (!id) return '-';
+    return this.nameById.get(id) ?? `#${id}`;
+    // إلى بغيتي دقة أكثر، نقدر نعمل call منفصل إلا ماكانش فالماب
+  }
+
+  badgeClass(s: string) {
+    return {
+      'bg-amber-100 text-amber-700': s === 'PENDING',
+      'bg-green-100 text-green-700': s === 'ACCEPTED',
+      'bg-rose-100 text-rose-700' : s === 'REJECTED' || s === 'CANCELLED',
+      'bg-blue-100 text-blue-700' : s === 'COMPLETED' || s === 'RESPONDED'
+    };
+  }
+
+  statusText(s: string) {
+    switch (s) {
+      case 'PENDING':   return 'En attente';
+      case 'RESPONDED': return 'Répondue';
+      case 'ACCEPTED':  return 'Acceptée';
+      case 'REJECTED':  return 'Refusée';
+      case 'CANCELLED': return 'Annulée';
+      case 'COMPLETED': return 'Terminée';
+      default:          return s;
+    }
   }
 }

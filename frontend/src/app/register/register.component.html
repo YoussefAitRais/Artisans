@@ -114,7 +114,8 @@
               class="bg-gray-700 text-white px-4 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               [attr.required]="registerObj.role === 'ARTISAN' ? '' : null"
             >
-              <option [ngValue]="null" disabled selected>-- Select a category --</option>
+              <!-- ملاحظة: بدون selected باش ما يعطلش ngModel -->
+              <option [ngValue]="null" disabled>-- Select a category --</option>
               <option *ngFor="let c of categories" [ngValue]="c.id">{{ c.name }}</option>
             </select>
           </div>

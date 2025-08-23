@@ -1,0 +1,34 @@
+<div class="rounded-xl border border-slate-800 bg-slate-900/60 p-4 space-y-4">
+  <div class="font-semibold">Mes devis</div>
+
+  <div class="grid md:grid-cols-3 gap-3 items-end">
+    <div>
+      <label class="block text-sm text-slate-300 mb-1">ID Demande</label>
+      <input [(ngModel)]="model.demandeId" type="number" class="w-full bg-slate-800 rounded-lg px-3 py-2 outline-none border border-slate-700">
+    </div>
+    <div>
+      <label class="block text-sm text-slate-300 mb-1">Montant (MAD)</label>
+      <input [(ngModel)]="model.montant" type="number" class="w-full bg-slate-800 rounded-lg px-3 py-2 outline-none border border-slate-700">
+    </div>
+    <div class="md:col-span-3">
+      <label class="block text-sm text-slate-300 mb-1">Message</label>
+      <input [(ngModel)]="model.message" class="w-full bg-slate-800 rounded-lg px-3 py-2 outline-none border border-slate-700">
+    </div>
+    <div>
+      <button (click)="create()" class="px-3 py-2 rounded-lg bg-sky-600 hover:bg-sky-700 text-white">Envoyer devis</button>
+    </div>
+  </div>
+
+  <div class="space-y-3">
+    <div *ngFor="let d of quotes" class="p-4 rounded-lg bg-slate-800/60 flex items-center justify-between text-sm">
+      <div>
+        <div class="font-medium">{{ d.ref || ('DV-' + d.id) }}</div>
+        <div class="text-slate-300">Demande #{{ d.demandeId }}</div>
+      </div>
+      <div class="flex items-center gap-4">
+        <div class="font-semibold">{{ d.montant }} MAD</div>
+        <span class="px-2 py-0.5 rounded bg-emerald-600/20 text-emerald-300">{{ d.status || '—' }}</span>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,16 +1,9 @@
-import { Component, computed, signal } from '@angular/core';
+import { Component, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-
-type CatStatus = 'ACTIVE' | 'INACTIVE';
-
-export interface Category {
-  id: number;
-  name: string;
-  description: string;
-  status: CatStatus;
-  createdAt: string; // ISO
-}
+import {
+  AdminApi, CategoryCreateRequest, CategoryResponse, CategoryUpdateRequest, Page
+} from '../../../services/api/admin-api.service';
 
 @Component({
   selector: 'app-admin-categories',
@@ -18,71 +11,84 @@ export interface Category {
   imports: [CommonModule, FormsModule],
   templateUrl: './admin-categories.component.html'
 })
-export class AdminCategoriesComponent {
-  // data (mock)
-  categories = signal<Category[]>([
-    { id: 1, name: 'Plomberie', description: 'Services de plomberie', status: 'ACTIVE', createdAt: '2024-01-12' },
-    { id: 2, name: 'Électricité', description: 'Installations électriques', status: 'ACTIVE', createdAt: '2024-02-20' },
-    { id: 3, name: 'Peinture', description: 'Peinture intérieure/extérieure', status: 'INACTIVE', createdAt: '2024-03-11' },
-    { id: 4, name: 'Mécanique', description: 'Réparation automobile', status: 'ACTIVE', createdAt: '2024-04-05' },
-  ]);
+export class AdminCategoriesComponent implements OnInit {
+  // paging
+  page = signal(0);
+  size = signal(10);
+  sort = signal('id,desc');
 
-  q = signal('');
-  status = signal<CatStatus | 'ALL'>('ALL');
-  page = signal(1);
-  size = signal(6);
+  // server page
+  data = signal<Page<CategoryResponse> | null>(null);
+  loading = signal(false);
+  error = signal('');
 
-  filtered = computed(() => {
-    const text = this.q().toLowerCase();
-    const st = this.status();
-    return this.categories().filter(c => {
-      const t = [c.name, c.description, c.status].join(' ').toLowerCase().includes(text);
-      const s = st === 'ALL' || c.status === st;
-      return t && s;
+  // create form
+  newName = signal('');
+  newDesc = signal('');
+
+  // edit inline
+  editingId = signal<number | null>(null);
+  editName = signal('');
+  editDesc = signal('');
+
+  totalPages = computed(() => this.data()?.totalPages ?? 1);
+
+  constructor(private api: AdminApi) {}
+
+  ngOnInit(): void {
+    this.load();
+  }
+
+  load() {
+    this.loading.set(true); this.error.set('');
+    this.api.categories(this.page(), this.size(), this.sort()).subscribe({
+      next: (p) => this.data.set(p),
+      error: (e) => this.error.set(e?.error?.message || 'Erreur de chargement'),
+      complete: () => this.loading.set(false)
     });
-  });
-
-  totalPages = computed(() => Math.max(1, Math.ceil(this.filtered().length / this.size())));
-  paged = computed(() => {
-    const start = (this.page() - 1) * this.size();
-    return this.filtered().slice(start, start + this.size());
-  });
-
-  // actions
-  toggle(c: Category) {
-    const next: CatStatus = c.status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE';
-    this.categories.update(list => list.map(x => x.id === c.id ? { ...x, status: next } : x));
-  }
-  remove(c: Category) {
-    if (!confirm(`Supprimer "${c.name}" ?`)) return;
-    this.categories.update(list => list.filter(x => x.id !== c.id));
   }
 
-  // modal
-  show = signal(false);
-  draft = signal<Category | null>(null);
-
-  newCategory() {
-    const id = Math.max(...this.categories().map(c => c.id), 0) + 1;
-    this.draft.set({ id, name: '', description: '', status: 'ACTIVE', createdAt: new Date().toISOString().slice(0,10) });
-    this.show.set(true);
-  }
-  edit(c: Category) {
-    this.draft.set({ ...c });
-    this.show.set(true);
-  }
-  save() {
-    const d = this.draft();
-    if (!d || !d.name.trim()) return alert('Nom requis');
-    this.categories.update(list => {
-      const exists = list.some(x => x.id === d.id);
-      return exists ? list.map(x => x.id === d.id ? d : x) : [d, ...list];
+  // Create
+  create() {
+    const body: CategoryCreateRequest = {
+      name: this.newName().trim(),
+      description: this.newDesc().trim() || undefined
+    };
+    if (!body.name) return;
+    this.api.createCategory(body).subscribe({
+      next: () => { this.newName.set(''); this.newDesc.set(''); this.load(); }
     });
-    this.show.set(false);
   }
-  close() { this.show.set(false); }
 
-  trackById = (_: number, c: Category) => c.id;
-  prev() { this.page.set(Math.max(1, this.page() - 1)); }
-  next() { this.page.set(Math.min(this.totalPages(), this.page() + 1)); }
+  // Edit
+  startEdit(c: CategoryResponse) {
+    this.editingId.set(c.id);
+    this.editName.set(c.name);
+    this.editDesc.set(c.description ?? '');
+  }
+  cancelEdit() { this.editingId.set(null); }
+
+  saveEdit(id: number) {
+    const body: CategoryUpdateRequest = {
+      name: this.editName().trim(),
+      description: this.editDesc().trim() || undefined
+    };
+    if (!body.name) return;
+    this.api.updateCategory(id, body).subscribe({
+      next: () => { this.editingId.set(null); this.load(); }
+    });
+  }
+
+  // Delete
+  remove(id: number) {
+    if (!confirm('Supprimer cette catégorie ?')) return;
+    this.api.deleteCategory(id).subscribe({ next: () => this.load() });
+  }
+
+  prev() { this.page.set(Math.max(0, this.page() - 1)); this.load(); }
+  next() {
+    const last = Math.max(0, (this.data()?.totalPages ?? 1) - 1);
+    this.page.set(Math.min(last, this.page() + 1));
+    this.load();
+  }
 }

@@ -1,6 +1,8 @@
-import { Component, signal } from '@angular/core';
+// src/app/pages/client/favorites/favorites.component.ts
+import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import {FormsModule, ReactiveFormsModule} from '@angular/forms';
+import { FormsModule } from '@angular/forms';
+import { FavoritesApi, FavoriteDto } from '../../../services/api/favorites-api.service';
 
 interface Favorite {
   id: number;
@@ -8,22 +10,39 @@ interface Favorite {
   category: string;
   city: string;
   image: string;
-  rating: number; // 1..5
+  rating: number;
 }
 
 @Component({
   selector: 'app-favorites',
   standalone: true,
-  imports: [CommonModule , FormsModule],
+  imports: [CommonModule, FormsModule],
   templateUrl: './favorites.component.html'
 })
-export class FavoritesComponent {
+export class FavoritesComponent implements OnInit {
   q = signal('');
-  favorites = signal<Favorite[]>([
-    { id: 1, name: 'ClimTech',      category: 'Climatisation', city: 'Casablanca', image: 'assets/Images/artisan.jpg', rating: 5 },
-    { id: 2, name: 'Plombier Pro',  category: 'Plomberie',     city: 'Rabat',      image: 'assets/Images/artisan.jpg', rating: 4 },
-    { id: 3, name: 'PeintureFix',   category: 'Peinture',      city: 'Fès',        image: 'assets/Images/artisan.jpg', rating: 4 },
-  ]);
+  favorites = signal<Favorite[]>([]);
+
+  constructor(private favApi: FavoritesApi) {}
+
+  ngOnInit(): void {
+    this.load();
+  }
+
+  load() {
+    this.favApi.list().subscribe({
+      next: (list) => this.favorites.set(list.map(this.toUi))
+    });
+  }
+
+  private toUi = (d: FavoriteDto): Favorite => ({
+    id: d.artisanId,
+    name: d.artisanName,
+    category: d.categoryName ?? '-',
+    city: d.city ?? '-',
+    image: d.imageUrl ?? 'assets/Images/artisan.jpg',
+    rating: d.rating ?? 0
+  });
 
   filtered() {
     const t = this.q().toLowerCase();
@@ -33,7 +52,10 @@ export class FavoritesComponent {
   }
 
   remove(f: Favorite) {
-    this.favorites.update(list => list.filter(x => x.id !== f.id));
+    if (!confirm(`Retirer ${f.name} des favoris ?`)) return;
+    this.favApi.remove(f.id).subscribe({
+      next: () => this.favorites.update(list => list.filter(x => x.id !== f.id))
+    });
   }
 
   stars(n: number) { return Array.from({ length: 5 }, (_, i) => i < n); }

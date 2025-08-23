@@ -6,7 +6,13 @@ const API_BASE = 'http://localhost:8091';
 
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const platformId = inject(PLATFORM_ID);
-  if (isPlatformServer(platformId)) {
+  if (isPlatformServer(platformId)) return next(req);
+
+  const isPublicCategories =
+    req.method === 'GET' &&
+    /\/api\/categories(\/.*)?$/.test(req.url);
+
+  if (isPublicCategories) {
     return next(req);
   }
 
