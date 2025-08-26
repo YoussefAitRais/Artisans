@@ -44,7 +44,7 @@ export class AuthService {
 
   constructor(private http: HttpClient) {}
 
-  // ---------- helpers: localStorage (آمن مع SSR) ----------
+  // ---------- helpers: localStorage  ----------
   private get canStorage() {
     return isPlatformBrowser(this.platformId) && typeof localStorage !== 'undefined';
   }
@@ -118,7 +118,7 @@ export class AuthService {
     return this.http.post<LoginResponse>(`${API}/login`, { email, password }).pipe(
       map(res => {
         this.saveToken(res.token);
-        // الدور من الاستجابة أو من الـ JWT
+        // JWT
         const raw = Array.isArray(res.role) ? res.role.join(' ') : (res.role ?? '');
         const role = this.normalizeRole(raw) || this.roleFromPayload(this.parseJwt(res.token));
         if (role) this.setRole(role);

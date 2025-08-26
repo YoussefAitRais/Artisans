@@ -3,12 +3,11 @@ package org.event.backend.service;
 import org.event.backend.dto.AuthResponse;
 import org.event.backend.dto.LoginRequest;
 import org.event.backend.dto.RegisterRequest;
-import org.event.backend.entity.Artisan;
-import org.event.backend.entity.Client;
-import org.event.backend.entity.Role;
-import org.event.backend.entity.Utilisateur;
+import org.event.backend.dto.artisan.RegisterArtisanRequest;
+import org.event.backend.entity.*;
+import org.event.backend.repository.CategoryRepository;
 import org.event.backend.repository.UtilisateurRepository;
-import org.event.backend.service.JwtService;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -18,36 +17,35 @@ import org.springframework.stereotype.Service;
 public class AuthenticationService {
 
     private final UtilisateurRepository utilisateurRepository;
+    private final CategoryRepository categoryRepository;   // <-- NEW
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
 
     public AuthenticationService(UtilisateurRepository utilisateurRepository,
+                                 CategoryRepository categoryRepository,       // <-- NEW
                                  PasswordEncoder passwordEncoder,
                                  JwtService jwtService,
                                  AuthenticationManager authenticationManager) {
         this.utilisateurRepository = utilisateurRepository;
+        this.categoryRepository = categoryRepository;      // <-- NEW
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
         this.authenticationManager = authenticationManager;
     }
 
-    /**
-     * Register a new client
-     */
+    // -------- Register Client ----------
     public AuthResponse registerClient(RegisterRequest request) {
-
-        if (utilisateurRepository.existsByEmail(request.getEmail())){
-            throw new RuntimeException( "Email Already Exist");
+        if (utilisateurRepository.existsByEmail(request.getEmail())) {
+            throw new DataIntegrityViolationException("Email already exists");
         }
 
         Client client = new Client(
-                request.getNom(),
-                request.getPrenom(),
-                request.getEmail(),
+                request.getNom().trim(),
+                request.getPrenom().trim(),
+                request.getEmail().trim(),
                 passwordEncoder.encode(request.getPassword()),
                 Role.CLIENT
-
         );
         utilisateurRepository.save(client);
 
@@ -63,23 +61,28 @@ public class AuthenticationService {
         );
     }
 
-    /**
-     * Register a new artisan
-     */
-    public AuthResponse registerArtisan(RegisterRequest request) {
-        if (utilisateurRepository.existsByEmail(request.getEmail())){
-            throw new RuntimeException( "Email Already Exist");
+    // -------- Register Artisan ----------
+    public AuthResponse registerArtisan(RegisterArtisanRequest req) {
+        if (utilisateurRepository.existsByEmail(req.getEmail())) {
+            throw new DataIntegrityViolationException("Email already exists");
         }
+
+        // categoryId is required (because Artisan.category nullable=false)
+        Category cat = categoryRepository.findById(req.getCategoryId())
+                .orElseThrow(() -> new IllegalArgumentException("Category not found"));
+
         Artisan artisan = new Artisan(
-                request.getNom(),
-                request.getPrenom(),
-                request.getEmail(),
-                passwordEncoder.encode(request.getPassword()),
+                req.getNom().trim(),
+                req.getPrenom().trim(),
+                req.getEmail().trim(),
+                passwordEncoder.encode(req.getPassword()),
                 Role.ARTISAN,
-                null, // metier
-                null, // localisation
-                null  // description
+                req.getMetier().trim(),
+                req.getLocalisation() == null ? null : req.getLocalisation().trim(),
+                req.getDescription() == null ? null : req.getDescription().trim()
         );
+        artisan.setCategory(cat); // <-- لازم
+
         utilisateurRepository.save(artisan);
 
         String token = jwtService.generateToken(artisan);
@@ -94,9 +97,7 @@ public class AuthenticationService {
         );
     }
 
-    /**
-     * Authenticate existing user
-     */
+    // -------- Login ----------
     public AuthResponse login(LoginRequest request) {
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(

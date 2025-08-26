@@ -4,13 +4,12 @@ import jakarta.validation.Valid;
 import org.event.backend.dto.AuthResponse;
 import org.event.backend.dto.LoginRequest;
 import org.event.backend.dto.RegisterRequest;
+import org.event.backend.dto.artisan.RegisterArtisanRequest;
 import org.event.backend.service.AuthenticationService;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-
 
 @RestController
 @RequestMapping("/api/auth")
@@ -35,7 +34,7 @@ public class AuthController {
     }
 
     @PostMapping(path = "/register-artisan", consumes = "application/json", produces = "application/json")
-    public ResponseEntity<AuthResponse> registerArtisan(@Valid @RequestBody RegisterRequest request) {
+    public ResponseEntity<AuthResponse> registerArtisan(@Valid @RequestBody RegisterArtisanRequest request) {
         AuthResponse response = authenticationService.registerArtisan(request);
 
         HttpHeaders headers = new HttpHeaders();

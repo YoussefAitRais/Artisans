@@ -18,8 +18,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
-import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.filter.CorsFilter;
 
 import java.util.Arrays;
 import java.util.List;
@@ -37,14 +37,35 @@ public class SecurityConfig {
         this.userDetailsService = userDetailsService;
     }
 
+    @Bean(name = "corsFilter")
+    public CorsFilter corsFilter(
+            @Value("${app.cors.allowed-origins:http://localhost:4200}") String originsProp
+    ) {
+        List<String> origins = Arrays.stream(originsProp.split(","))
+                .map(String::trim)
+                .filter(s -> !s.isBlank())
+                .toList();
+
+        CorsConfiguration cfg = new CorsConfiguration();
+        cfg.setAllowedOriginPatterns(origins);
+        cfg.setAllowCredentials(true);
+        cfg.setAllowedMethods(List.of("GET","POST","PUT","PATCH","DELETE","OPTIONS"));
+        cfg.setAllowedHeaders(List.of("*"));
+        cfg.setExposedHeaders(List.of("Location","Content-Disposition","Authorization"));
+        cfg.setMaxAge(3600L);
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", cfg);
+        return new CorsFilter(source);
+    }
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-
         http
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .cors(cors -> {})
 
-                // Return JSON for 401/403 instead of HTML
                 .exceptionHandling(ex -> ex
                         .authenticationEntryPoint((request, response, authEx) -> {
                             response.setStatus(401);
@@ -62,18 +83,15 @@ public class SecurityConfig {
                         })
                 )
 
-                // Enable CORS to use the bean defined below
-                .cors(cors -> {})
-
                 .authorizeHttpRequests(auth -> auth
-                        // Allow CORS preflight
+                        // Preflight
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 
-                        // Public portfolio & media files
-                        .requestMatchers(HttpMethod.GET, "/api/artisans/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/media/**").permitAll()
-
-                        // Auth endpoints
+                        // Public GETs
+                        .requestMatchers(HttpMethod.GET, "/api/artisans/**", "/api/media/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/categories/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/artisans/**", "/api/media/**").permitAll()
+                        // Auth endpoints + docs
                         .requestMatchers(
                                 "/api/auth/register-client",
                                 "/api/auth/register-artisan",
@@ -82,24 +100,22 @@ public class SecurityConfig {
                                 "/v3/api-docs/**"
                         ).permitAll()
 
-                        // Quotes: client can accept a quote (specific BEFORE generic)
-                        .requestMatchers(HttpMethod.POST, "/api/quotes/*/accept").hasRole("CLIENT")
+                        // -------- Domain rules you asked for --------
+                        // Client-owned requests
+                        .requestMatchers("/api/requests/**").hasRole("CLIENT")
+                        // Artisan browse requests
+                        .requestMatchers("/api/artisan/requests/**").hasRole("ARTISAN")
+                        // Admin requests management
+                        .requestMatchers("/api/admin/requests/**").hasRole("ADMIN")
 
-                        // Quotes: artisan creates/updates/deletes, client lists
-                        .requestMatchers(HttpMethod.POST, "/api/requests/**/quotes").hasRole("ARTISAN")
-                        .requestMatchers(HttpMethod.GET,  "/api/requests/**/quotes").hasRole("CLIENT")
-                        .requestMatchers("/api/quotes/**").hasRole("ARTISAN")
-
-                        // Engagements & Conversations
-                        .requestMatchers("/api/engagements/**").hasAnyRole("CLIENT","ARTISAN")
-                        .requestMatchers("/api/conversations/**").hasAnyRole("CLIENT","ARTISAN")
-
-                        // Role-based areas
+                        // Other admin endpoints (categories, users, …)
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
+
+                        // Role areas
                         .requestMatchers("/api/artisan/**").hasRole("ARTISAN")
                         .requestMatchers("/api/client/**").hasRole("CLIENT")
 
-                        // Everything else requires auth
+                        // Any other endpoint requires auth
                         .anyRequest().authenticated()
                 )
 
@@ -107,31 +123,6 @@ public class SecurityConfig {
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
-    }
-
-    // Global CORS configuration (reads allowed origins from properties)
-    @Bean
-    public CorsConfigurationSource corsConfigurationSource(
-            @Value("${app.cors.allowed-origins:http://localhost:4200}") String originsProp) {
-
-        List<String> origins = Arrays.stream(originsProp.split(","))
-                .map(String::trim)
-                .filter(s -> !s.isBlank())
-                .toList();
-
-        CorsConfiguration cfg = new CorsConfiguration();
-        // With credentials=true, you must not use "*"
-        cfg.setAllowedOrigins(origins);
-        cfg.setAllowedMethods(List.of("GET","POST","PUT","PATCH","DELETE","OPTIONS"));
-        cfg.setAllowedHeaders(List.of("Authorization","Content-Type","X-Requested-With","Accept","Origin"));
-        // Expose headers if you return them (e.g., Location, Content-Disposition for downloads)
-        cfg.setExposedHeaders(List.of("Location","Content-Disposition"));
-        cfg.setAllowCredentials(true);
-        cfg.setMaxAge(3600L);
-
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", cfg);
-        return source;
     }
 
     @Bean
@@ -143,13 +134,10 @@ public class SecurityConfig {
     }
 
     @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder(); // BCrypt hashing
-    }
+    public PasswordEncoder passwordEncoder() { return new BCryptPasswordEncoder(); }
 
     @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration config)
-            throws Exception {
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
         return config.getAuthenticationManager();
     }
 }

@@ -1,14 +1,8 @@
 package org.event.backend.dto;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
-
 public class AuthResponse {
 
-    @JsonIgnore
     private String token;
-
-    @JsonIgnore
     private Long id;
 
     private String email;
@@ -16,8 +10,7 @@ public class AuthResponse {
     private String nom;
     private String prenom;
 
-    public AuthResponse() {
-    }
+    public AuthResponse() {}
 
     public AuthResponse(String token, Long id, String email, String role, String nom, String prenom) {
         this.token = token;
@@ -27,8 +20,6 @@ public class AuthResponse {
         this.nom = nom;
         this.prenom = prenom;
     }
-
-    // ----- Getters & Setters -----
 
     public String getToken() { return token; }
     public void setToken(String token) { this.token = token; }
