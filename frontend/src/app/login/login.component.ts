@@ -1,66 +1,41 @@
 import { Component } from '@angular/core';
-import { FormsModule, NgForm } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import { Router, RouterLink } from '@angular/router';
-import { AuthService, LoginRequest, AuthSession } from '../services/auth/auth.service';
+import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
+import { AuthService } from '../services/auth/auth.service';
 
 @Component({
-  selector: 'app-login',
   standalone: true,
-  imports: [FormsModule, CommonModule, RouterLink],
-  templateUrl: './login.component.html',
-  styleUrls: ['./login.component.css']
+  selector: 'app-login',
+  imports: [CommonModule, FormsModule],
+  templateUrl: './login.component.html'
 })
 export class LoginComponent {
-
-  loginObj = {
-    email: '',
-    password: ''
-  };
-
+  email = '';
+  password = '';
   loading = false;
-  errorMsg = '';
+  error = '';
 
   constructor(private auth: AuthService, private router: Router) {}
 
-  onLoginSubmit(form: NgForm) {
-    this.errorMsg = '';
-
-    if (!form.valid) {
-      this.errorMsg = 'Please fill in all fields';
-      return;
-    }
-
-    const payload: LoginRequest = {
-      email: this.loginObj.email.trim(),
-      password: this.loginObj.password
-    };
-
+  submit() {
+    this.error = '';
     this.loading = true;
 
-    this.auth.login(payload).subscribe({
-      next: (session: AuthSession) => {
-        // توجيه حسب الدور
-        switch (session.role) {
-          case 'ARTISAN':
-            this.router.navigate(['/artisan/dashboard']);
-            break;
-          case 'CLIENT':
-            this.router.navigate(['/client/home']);
-            break;
-          case 'ADMIN':
-            this.router.navigate(['/admin']);
-            break;
-          default:
-            this.router.navigate(['/']);
-        }
-      },
-      error: (err) => {
-        console.error('Login error', err);
-        this.errorMsg = err?.error?.message || 'Email أو Password غير صحيح';
+    this.auth.login(this.email, this.password).subscribe({
+      next: res => {
+        this.auth.saveToken(res.token);
+        const role = this.auth.role;
+        if (role === 'ARTISAN')      this.router.navigate(['/artisan/home']);
+        else if (role === 'CLIENT')  this.router.navigate(['/client/home']);
+        else if (role === 'ADMIN')   this.router.navigate(['/admin']);
+        else                         this.router.navigate(['/']);
         this.loading = false;
       },
-      complete: () => (this.loading = false)
+      error: e => {
+        this.loading = false;
+        this.error = e?.error?.message || 'Email ou mot de passe invalide';
+      }
     });
   }
 }

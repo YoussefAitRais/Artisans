@@ -1,11 +1,12 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ArtisanApiService, Review } from '../../../services/api/artisan-api.service';
+import {RouterModule} from "@angular/router";
 
 @Component({
   standalone: true,
   selector: 'app-artisan-home',
-  imports: [CommonModule],
+  imports: [CommonModule , RouterModule],
   templateUrl: './artisan-home.component.html'
 })
 export class ArtisanHomeComponent implements OnInit {
@@ -20,6 +21,7 @@ export class ArtisanHomeComponent implements OnInit {
   recentReviews: Review[] = [];
 
   ngOnInit() {
+    // إذا عندك getRequests فالـservice:
     this.api.getRequests({ status: 'EN_ATTENTE', page: 0, size: 1 })
       .subscribe(p => this.stats.find(s => s.key==='pending')!.value = p.totalElements);
 

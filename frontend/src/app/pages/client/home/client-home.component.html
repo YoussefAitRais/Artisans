@@ -2,28 +2,100 @@
   <!-- Search bar -->
   <div class="rounded-xl border border-slate-800 bg-slate-900/60 p-4">
     <div class="grid md:grid-cols-4 gap-3">
-      <input [(ngModel)]="keyword" placeholder="Métier, mot-clé…" class="bg-slate-800 rounded-lg px-3 py-2 outline-none border border-slate-700" />
-      <input [(ngModel)]="city" placeholder="Ville…" class="bg-slate-800 rounded-lg px-3 py-2 outline-none border border-slate-700" />
-      <input [(ngModel)]="categoryId" type="number" placeholder="Catégorie ID (optionnel)" class="bg-slate-800 rounded-lg px-3 py-2 outline-none border border-slate-700" />
+      <input [(ngModel)]="keyword" placeholder="Métier, mot-clé…"
+             class="bg-slate-800 rounded-lg px-3 py-2 outline-none border border-slate-700" />
+      <input [(ngModel)]="city" placeholder="Ville…"
+             class="bg-slate-800 rounded-lg px-3 py-2 outline-none border border-slate-700" />
+      <input [(ngModel)]="categoryId" type="number" placeholder="Catégorie ID (optionnel)"
+             class="bg-slate-800 rounded-lg px-3 py-2 outline-none border border-slate-700" />
       <button (click)="onSearch()" class="px-4 py-2 rounded-lg bg-sky-600 hover:bg-sky-700 text-white">Rechercher</button>
     </div>
   </div>
 
   <!-- Results -->
   <div *ngIf="loading" class="text-slate-300">Chargement…</div>
-
   <div *ngIf="!loading && cards.length === 0" class="text-slate-400">
     Aucun artisan trouvé.
   </div>
 
   <div *ngIf="!loading && cards.length" class="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-    <div *ngFor="let c of cards" class="rounded-xl border border-slate-800 bg-slate-900/60 overflow-hidden">
+    <div *ngFor="let c of cards; trackBy: trackById"
+         class="rounded-xl border border-slate-800 bg-slate-900/60 overflow-hidden">
       <img [src]="c.image" class="w-full h-40 object-cover" alt="" />
       <div class="p-4 space-y-1">
         <div class="font-semibold">{{ c.name }}</div>
         <div class="text-sm text-slate-300">{{ c.metier }}</div>
         <div class="text-xs text-slate-400">{{ c.city }}</div>
         <div class="text-amber-300 text-sm">{{ '⭐'.repeat(c.rating || 0) }}</div>
+
+        <div class="pt-2">
+          <button class="text-sm rounded-md bg-blue-600 text-white px-3 py-1 hover:bg-blue-700"
+                  (click)="openRequestModal(c)">
+            Demander un devis
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal -->
+  <div *ngIf="showModal" class="fixed inset-0 z-50">
+    <div class="absolute inset-0 bg-black/40" (click)="closeModal()"></div>
+    <div class="absolute inset-0 flex items-center justify-center p-4">
+      <div class="w-full max-w-2xl rounded-xl bg-white shadow-xl">
+        <div class="flex items-center justify-between border-b px-5 py-3">
+          <h3 class="text-lg font-semibold">Demander un devis ·</h3>
+          <button (click)="closeModal()" class="text-gray-500 hover:text-gray-700">✕</button>
+        </div>
+
+        <form class="p-5 space-y-4" #f="ngForm" (ngSubmit)="sendRequest()">
+          <div class="grid md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs text-gray-600 mb-1">Titre *</label>
+              <input [(ngModel)]="form.title" name="title"
+                     class="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-pink-600" required />
+            </div>
+            <div>
+              <label class="block text-xs text-gray-600 mb-1">Ville</label>
+              <input [(ngModel)]="form.city" name="city"
+                     class="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-pink-600" />
+            </div>
+          </div>
+
+          <div class="grid md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs text-gray-600 mb-1">Catégorie</label>
+              <select [(ngModel)]="form.categoryId" name="categoryId"
+                      class="w-full rounded-md border border-gray-300 px-3 py-2 text-sm">
+                <option [ngValue]="null">—</option>
+                <option *ngFor="let c of categories" [ngValue]="c.id">{{ c.name }}</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs text-gray-600 mb-1">Date souhaitée (optionnel)</label>
+              <input [(ngModel)]="form.desiredDate" name="desiredDate" placeholder="jj/mm/aaaa ou yyyy-MM-dd"
+                     class="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-pink-600" />
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-xs text-gray-600 mb-1">Description</label>
+            <textarea [(ngModel)]="form.description" name="description" rows="4"
+                      class="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-pink-600"></textarea>
+          </div>
+
+          <div *ngIf="errorMsg" class="text-sm text-rose-600">{{ errorMsg }}</div>
+
+          <div class="flex items-center justify-end gap-2 pt-2">
+            <button type="button" (click)="closeModal()"
+                    class="rounded-md border border-gray-300 px-4 py-2 text-sm hover:bg-gray-50">Annuler</button>
+            <button type="submit"
+                    [disabled]="sending"
+                    class="rounded-md bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-60">
+              {{ sending ? 'Envoi…' : 'Envoyer' }}
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   </div>

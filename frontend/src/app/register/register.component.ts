@@ -169,12 +169,12 @@ export class RegisterComponent implements OnInit {
         if (session.role === 'ADMIN') {
           this.router.navigate(['/admin']);
         } else if (session.role === 'ARTISAN') {
-          this.router.navigate(['/client']);
+          this.router.navigate(['/artisan']);
         } else {
           this.router.navigate(['/client']);
         }
       },
-      error: (err) => {
+      error: (err: any) => {
         this.loading = false;
         this.errorMsg =
           err?.error?.message ||

@@ -103,7 +103,7 @@
           </button>
         </div>
 
-        <!-- Artisan Fields -->
+        <!-- Artisan Fields (show only if role = ARTISAN) -->
         <div *ngIf="registerObj.role === 'ARTISAN'" class="space-y-4 border border-gray-700 rounded-lg p-4">
           <!-- Category -->
           <div class="flex flex-col">
@@ -114,7 +114,7 @@
               class="bg-gray-700 text-white px-4 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               [attr.required]="registerObj.role === 'ARTISAN' ? '' : null"
             >
-              <!-- ملاحظة: بدون selected باش ما يعطلش ngModel -->
+              <!-- مهم: بلا selected باش ngModel يبقى متحكّم -->
               <option [ngValue]="null" disabled>-- Select a category --</option>
               <option *ngFor="let c of categories" [ngValue]="c.id">{{ c.name }}</option>
             </select>
@@ -155,7 +155,7 @@
           </div>
         </div>
 
-        <!-- Error -->
+        <!-- Error (shows for any role) -->
         <div *ngIf="errorMsg" class="text-red-400 text-center">{{ errorMsg }}</div>
 
         <!-- Submit -->

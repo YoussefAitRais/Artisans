@@ -1,20 +1,19 @@
-// src/app/guards/login-redirect.guard.ts
-import { CanMatchFn, Router, UrlTree } from '@angular/router';
-import { inject, PLATFORM_ID } from '@angular/core';
-import { isPlatformBrowser } from '@angular/common';
+import { inject } from '@angular/core';
+import { CanMatchFn, Router } from '@angular/router';
+import { AuthService } from '../services/auth/auth.service';
 
-export const loginRedirectGuard: CanMatchFn = (): boolean | UrlTree => {
+export const loginRedirectGuard: CanMatchFn = () => {
+  const auth = inject(AuthService);
   const router = inject(Router);
-  const platformId = inject(PLATFORM_ID);
-  const browser = isPlatformBrowser(platformId);
 
-  const token = browser ? localStorage.getItem('token') : null;
-  const role  = browser ? localStorage.getItem('role')  : null;
-
-  if (!token) return true; // ما مسجّلش → خلّيه يدخل login/register
-
-  // مسجّل → رجّعو للدّاشبورد ديالو
-  if (role === 'ADMIN')   return router.parseUrl('/admin');
-  if (role === 'ARTISAN') return router.parseUrl('/artisan');
-  return router.parseUrl('/client');
+  // إذا راه داخل بالفعل رجّعو للدور ديالو
+  if (auth.isLoggedIn()) {
+    const r = auth.role;
+    if (r === 'ARTISAN') router.navigate(['/artisan/home']);
+    else if (r === 'CLIENT') router.navigate(['/client/home']);
+    else if (r === 'ADMIN') router.navigate(['/admin/home']);
+    else router.navigate(['/']);
+    return false; // ما يخليش يدخل /login
+  }
+  return true; // خليه يشوف /login
 };

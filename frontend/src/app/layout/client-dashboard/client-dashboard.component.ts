@@ -21,10 +21,7 @@ export class ClientDashboardComponent implements OnInit {
         this.userName = `${me.nom}${me.prenom ? ' ' + me.prenom : ''}`;
         this.userEmail = me.email;
       },
-      error: () => {
-        // لا توكن/expired → رجع للّوجين
-        this.router.navigateByUrl('/login');
-      }
+      error: () => this.router.navigateByUrl('/login')
     });
   }
 

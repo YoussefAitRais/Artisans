@@ -1,15 +1,22 @@
 import { Component, OnInit, computed, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+
 import {
-  CategoryApi,
-  CategoryDto,
   ClientApi,
-  Page,
+  Page,                      // Page ديال الطلبات
   ServiceRequestResponse
 } from '../../../services/api/client-api.service';
 
-type UiStatus = 'ALL' | 'PENDING' | 'RESPONDED' | 'ACCEPTED' | 'REJECTED' | 'CANCELLED' | 'COMPLETED';
+import {
+  CategoryApiService,
+  Category,
+  Page as CatPage
+} from '../../../services/api/category-api.service';
+
+type UiStatus =
+  | 'ALL' | 'PENDING' | 'RESPONDED' | 'ACCEPTED'
+  | 'REJECTED' | 'CANCELLED' | 'COMPLETED';
 
 @Component({
   selector: 'app-requests',
@@ -24,7 +31,7 @@ export class RequestsComponent implements OnInit {
   sortKey = signal<'createdAt' | 'title' | 'city' | 'status'>('createdAt');
   sortDir = signal<'asc' | 'desc'>('desc');
 
-  // filters (client-side)
+  // filters
   q = signal('');
   status = signal<UiStatus>('ALL');
   city = signal<'ALL' | string>('ALL');
@@ -33,22 +40,22 @@ export class RequestsComponent implements OnInit {
   pageData = signal<Page<ServiceRequestResponse> | null>(null);
   list = signal<ServiceRequestResponse[]>([]);
 
-  // categories map
-  categories = signal<CategoryDto[]>([]);
+  // categories
+  categories = signal<Category[]>([]);
   private nameById = new Map<number, string>();
 
   // modal
   show = signal(false);
   current = signal<ServiceRequestResponse | null>(null);
 
-  constructor(private api: ClientApi, private catApi: CategoryApi) {}
+  constructor(private api: ClientApi, private catApi: CategoryApiService) {}
 
   ngOnInit(): void {
     this.catApi.getAll(0, 200, 'name,asc').subscribe({
-      next: (p) => {
+      next: (p: CatPage<Category>) => {
         this.categories.set(p.content);
         this.nameById.clear();
-        p.content.forEach(c => this.nameById.set(c.id, c.name));
+        p.content.forEach((c: Category) => this.nameById.set(c.id, c.name));
       }
     });
     this.load();
@@ -57,7 +64,7 @@ export class RequestsComponent implements OnInit {
   load() {
     const sort = `${this.sortKey()},${this.sortDir()}`;
     this.api.myRequests(this.page() - 1, this.size(), sort).subscribe({
-      next: (res) => {
+      next: (res: Page<ServiceRequestResponse>) => {
         this.pageData.set(res);
         this.list.set(res.content);
       }
@@ -73,7 +80,6 @@ export class RequestsComponent implements OnInit {
     const text = this.q().toLowerCase();
     const st = this.status();
     const c = this.city();
-
     return this.list().filter(r => {
       const matchText = !text || [r.title, r.city, r.description].join(' ').toLowerCase().includes(text);
       const matchStatus = st === 'ALL' || r.status === st;
@@ -122,7 +128,6 @@ export class RequestsComponent implements OnInit {
   categoryName(id?: number | null) {
     if (!id) return '-';
     return this.nameById.get(id) ?? `#${id}`;
-    // إلى بغيتي دقة أكثر، نقدر نعمل call منفصل إلا ماكانش فالماب
   }
 
   badgeClass(s: string) {

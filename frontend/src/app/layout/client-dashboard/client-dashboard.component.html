@@ -1,3 +1,4 @@
+<!-- src/app/layout/client-dashboard/client-dashboard.component.html -->
 <div class="min-h-screen bg-gray-50 flex">
   <!-- Sidebar (desktop) -->
   <aside class="hidden lg:flex lg:flex-col lg:w-64 bg-gray-900 text-white">
@@ -6,10 +7,17 @@
     </div>
 
     <nav class="flex-1 p-4 space-y-2">
-      <a routerLink="home" routerLinkActive="!bg-pink-600"
-         [routerLinkActiveOptions]="{ exact: true }"
+      <a routerLink="home" routerLinkActive="!bg-pink-600" [routerLinkActiveOptions]="{ exact: true }"
          class="block w-full px-4 py-2 rounded-md hover:bg-white/10 transition">Accueil</a>
-      <!-- نزيدو باقي الصفحات من بعد -->
+
+      <a routerLink="requests" routerLinkActive="!bg-pink-600"
+         class="block w-full px-4 py-2 rounded-md hover:bg-white/10 transition">Mes demandes</a>
+
+      <a routerLink="favorites" routerLinkActive="!bg-pink-600"
+         class="block w-full px-4 py-2 rounded-md hover:bg-white/10 transition">Favoris</a>
+
+      <a routerLink="settings" routerLinkActive="!bg-pink-600"
+         class="block w-full px-4 py-2 rounded-md hover:bg-white/10 transition">Paramètres</a>
     </nav>
 
     <div class="p-4 border-t border-white/10">
@@ -28,10 +36,21 @@
         <span class="font-bold">Espace Client</span>
         <button (click)="toggleSidebar()" class="text-white/80 hover:text-white">✕</button>
       </div>
+
       <nav class="mt-4 space-y-2">
         <a routerLink="home" routerLinkActive="!bg-pink-600" [routerLinkActiveOptions]="{ exact:true }"
            (click)="toggleSidebar()" class="block px-4 py-2 rounded-md hover:bg-white/10">Accueil</a>
+
+        <a routerLink="requests" routerLinkActive="!bg-pink-600"
+           (click)="toggleSidebar()" class="block px-4 py-2 rounded-md hover:bg-white/10">Mes demandes</a>
+
+        <a routerLink="favorites" routerLinkActive="!bg-pink-600"
+           (click)="toggleSidebar()" class="block px-4 py-2 rounded-md hover:bg-white/10">Favoris</a>
+
+        <a routerLink="settings" routerLinkActive="!bg-pink-600"
+           (click)="toggleSidebar()" class="block px-4 py-2 rounded-md hover:bg-white/10">Paramètres</a>
       </nav>
+
       <div class="mt-6">
         <button (click)="logout()"
                 class="w-full bg-pink-600 hover:bg-pink-700 text-white font-semibold py-2 rounded-md">

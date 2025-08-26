@@ -2,25 +2,36 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
-// ===== Pagination =====
-export interface Page<T> { content: T[]; totalElements: number; }
+/* ======= أنواع عامة ======= */
+export interface Page<T> {
+  content: T[];
+  totalElements: number;
+  totalPages?: number;
+  size?: number;
+  number?: number; // zero-based
+}
 
-// ===== DTOs عامة =====
-export interface Category { id: number; name: string; description?: string; }
+export interface Category {
+  id: number;
+  name: string;
+  description?: string;
+}
 
+/* ======= Public search DTO ======= */
 export interface ArtisanDto {
   id: number;
-  name: string;           // الاسم المعروض
+  name: string;
   metier?: string;
   localisation?: string;
   rating?: number;
   avatarUrl?: string;
   categoryName?: string;
-  // aliases اختيارية باش تسكّت TS إلى كان كود قديم كينادي عليهم
+  // توافق مع كود قديم
   city?: string;
   imageUrl?: string;
 }
 
+/* ======= Profile ======= */
 export interface ArtisanProfile {
   id?: number;
   metier?: string;
@@ -29,7 +40,10 @@ export interface ArtisanProfile {
   category?: Category | { id: number };
 }
 
-export type RequestStatus = 'NOUVELLE' | 'EN_ATTENTE' | 'REPONDUE' | 'REFUSEE' | 'ANNULEE';
+/* ======= Requests ======= */
+export type RequestStatus =
+  | 'NOUVELLE' | 'EN_ATTENTE' | 'REPONDUE' | 'REFUSEE' | 'ANNULEE';
+
 export interface ArtisanRequest {
   id: number;
   titre: string;
@@ -40,17 +54,20 @@ export interface ArtisanRequest {
   clientName?: string;
 }
 
+/* ======= Quotes (Devis) ======= */
 export type QuoteStatus = 'BROUILLON' | 'ENVOYE' | 'ACCEPTE' | 'REFUSE';
+
 export interface Quote {
   id: number;
   ref?: string;
   montant: number;
   message?: string;
-  dateProposition?: string; // ISO
-  demandeId: number;        // (= requestId)
+  dateProposition?: string;
+  demandeId: number;
   status?: QuoteStatus;
 }
 
+/* ======= Reviews ======= */
 export interface Review {
   id: number;
   author: string;
@@ -59,6 +76,7 @@ export interface Review {
   createdAt?: string;
 }
 
+/* ======= Availability ======= */
 export interface AvailabilitySlot {
   id: number;
   dayOfWeek: number; // 1..7
@@ -66,6 +84,7 @@ export interface AvailabilitySlot {
   endTime: string;   // "13:00"
 }
 
+/* ======= Portfolio ======= */
 export interface PortfolioItem {
   id: number;
   url: string;
@@ -73,12 +92,43 @@ export interface PortfolioItem {
   createdAt?: string;
 }
 
+/* ======= Inbox / Offers ======= */
+export interface ArtisanInboxItem {
+  id: number;
+  title: string;
+  city?: string;
+  description?: string;
+  desiredDate?: string; // yyyy-MM-dd
+  createdAt: string;    // ISO
+  status: 'PENDING' | 'RESPONDED' | 'ACCEPTED' | 'REJECTED' | 'CANCELLED' | 'COMPLETED';
+  categoryId?: number;
+  clientEmail?: string;
+}
+
+export interface OfferCreateRequest {
+  price: number;
+  message?: string;
+  estimatedDays?: number;
+}
+
+export interface OfferResponse {
+  id: number;
+  requestId: number;
+  price: number;
+  message?: string;
+  estimatedDays?: number;
+  createdAt: string;
+  status: 'SENT' | 'WITHDRAWN' | 'ACCEPTED' | 'REJECTED';
+}
+
+/* ======= Service ======= */
+
 @Injectable({ providedIn: 'root' })
 export class ArtisanApiService {
   private http = inject(HttpClient);
   private readonly API = 'http://localhost:8091/api';
 
-  // ---------- Public search (للـ Client) ----------
+  /* --- Public search (client side) --- */
   searchArtisans(opts?: {
     keyword?: string; categoryId?: number; city?: string; page?: number; size?: number;
   }): Observable<Page<ArtisanDto>> {
@@ -91,7 +141,7 @@ export class ArtisanApiService {
     return this.http.get<Page<ArtisanDto>>(`${this.API}/artisans`, { params });
   }
 
-  // ---------- Profile ----------
+  /* --- Profile --- */
   getMyProfile(): Observable<ArtisanProfile> {
     return this.http.get<ArtisanProfile>(`${this.API}/artisan/me`);
   }
@@ -99,7 +149,7 @@ export class ArtisanApiService {
     return this.http.put<ArtisanProfile>(`${this.API}/artisan/me`, dto);
   }
 
-  // ---------- Requests ----------
+  /* --- Requests list for artisan --- */
   getRequests(opts?: { status?: RequestStatus; page?: number; size?: number })
     : Observable<Page<ArtisanRequest>> {
     let params = new HttpParams();
@@ -109,7 +159,7 @@ export class ArtisanApiService {
     return this.http.get<Page<ArtisanRequest>>(`${this.API}/artisan/requests`, { params });
   }
 
-  // ---------- Quotes (Devis) ----------
+  /* --- Quotes --- */
   listQuotes(): Observable<Page<Quote>> {
     return this.http.get<Page<Quote>>(`${this.API}/artisan/quotes`);
   }
@@ -123,7 +173,7 @@ export class ArtisanApiService {
     return this.http.patch<Quote>(`${this.API}/artisan/quotes/${id}/status`, { status });
   }
 
-  // ---------- Availability ----------
+  /* --- Availability --- */
   listAvailability(): Observable<AvailabilitySlot[]> {
     return this.http.get<AvailabilitySlot[]>(`${this.API}/artisan/availability`);
   }
@@ -134,7 +184,7 @@ export class ArtisanApiService {
     return this.http.delete<void>(`${this.API}/artisan/availability/${id}`);
   }
 
-  // ---------- Portfolio ----------
+  /* --- Portfolio --- */
   listPortfolio(): Observable<PortfolioItem[]> {
     return this.http.get<PortfolioItem[]>(`${this.API}/artisan/portfolio`);
   }
@@ -148,8 +198,28 @@ export class ArtisanApiService {
     return this.http.delete<void>(`${this.API}/artisan/portfolio/${id}`);
   }
 
-  // ---------- Reviews ----------
+  /* --- Reviews --- */
   listReviews(): Observable<Page<Review>> {
     return this.http.get<Page<Review>>(`${this.API}/artisan/reviews`);
+  }
+
+  /* --- Inbox & Offers --- */
+  inbox(
+    page = 0,
+    size = 10,
+    status: 'PENDING' | 'RESPONDED' | 'ALL' = 'PENDING'
+  ): Observable<Page<ArtisanInboxItem>> {
+    let params = new HttpParams()
+      .set('page', String(page))
+      .set('size', String(size))
+      .set('status', status);
+    return this.http.get<Page<ArtisanInboxItem>>(`${this.API}/artisan/inbox`, { params });
+  }
+
+  sendOffer(requestId: number, body: OfferCreateRequest): Observable<OfferResponse> {
+    return this.http.post<OfferResponse>(
+      `${this.API}/artisan/requests/${requestId}/offers`,
+      body
+    );
   }
 }

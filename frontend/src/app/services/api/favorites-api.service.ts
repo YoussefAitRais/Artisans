@@ -16,17 +16,20 @@ export interface FavoriteDto {
 
 @Injectable({ providedIn: 'root' })
 export class FavoritesApi {
+  private base = `${API_BASE}/api/client/favorites`;
   constructor(private http: HttpClient) {}
 
   list(): Observable<FavoriteDto[]> {
-    return this.http.get<FavoriteDto[]>(`${API_BASE}/api/client/favorites`);
+    return this.http.get<FavoriteDto[]>(this.base);
   }
 
-  add(artisanId: number) {
-    return this.http.post<void>(`${API_BASE}/api/client/favorites/${artisanId}`, {});
+  add(artisanId: number): Observable<void> {
+    // Backend: POST /api/client/favorites/{artisanId}
+    return this.http.post<void>(`${this.base}/${artisanId}`, {});
   }
 
-  remove(artisanId: number) {
-    return this.http.delete<void>(`${API_BASE}/api/client/favorites/${artisanId}`);
+  remove(artisanId: number): Observable<void> {
+    // Backend: DELETE /api/client/favorites/{artisanId}
+    return this.http.delete<void>(`${this.base}/${artisanId}`);
   }
 }
