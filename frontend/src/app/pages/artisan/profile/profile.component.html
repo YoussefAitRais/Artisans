@@ -1,19 +1,22 @@
-<div class="rounded-xl border border-slate-800 bg-slate-900/60 p-5 max-w-2xl">
-  <div class="font-semibold mb-4">Mon profil</div>
+<div class="p-4 grid gap-3">
+  <h2 class="text-xl font-bold">My Profile</h2>
 
-  <div class="space-y-4 text-sm">
-    <div>
-      <label class="block mb-1 text-slate-300">Métier</label>
-      <input [(ngModel)]="model.metier" class="w-full bg-slate-800 rounded-lg px-3 py-2 outline-none border border-slate-700 focus:border-sky-500">
-    </div>
-    <div>
-      <label class="block mb-1 text-slate-300">Localisation</label>
-      <input [(ngModel)]="model.localisation" class="w-full bg-slate-800 rounded-lg px-3 py-2 outline-none border border-slate-700 focus:border-sky-500">
-    </div>
-    <div>
-      <label class="block mb-1 text-slate-300">Description</label>
-      <textarea [(ngModel)]="model.description" rows="4" class="w-full bg-slate-800 rounded-lg px-3 py-2 outline-none border border-slate-700 focus:border-sky-500"></textarea>
-    </div>
-    <button (click)="save()" class="px-4 py-2 rounded-lg bg-sky-600 hover:bg-sky-700 text-white font-medium">Enregistrer</button>
-  </div>
+  <label class="grid gap-1">
+    <span class="text-sm text-slate-300">Metier</span>
+    <input class="bg-slate-800 rounded p-2" [(ngModel)]="model.metier" />
+  </label>
+
+  <label class="grid gap-1">
+    <span class="text-sm text-slate-300">Localisation</span>
+    <input class="bg-slate-800 rounded p-2" [(ngModel)]="model.localisation" />
+  </label>
+
+  <label class="grid gap-1">
+    <span class="text-sm text-slate-300">Description</span>
+    <textarea rows="4" class="bg-slate-800 rounded p-2" [(ngModel)]="model.description"></textarea>
+  </label>
+
+  <button class="bg-emerald-600 rounded px-4 py-2" (click)="save()" [disabled]="saving">
+    {{ saving ? 'Saving…' : 'Save' }}
+  </button>
 </div>

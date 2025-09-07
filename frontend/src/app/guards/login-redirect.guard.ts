@@ -1,27 +1,16 @@
-// src/app/guards/login-redirect.guard.ts
+import { CanMatchFn, Router, UrlTree } from '@angular/router';
 import { inject, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
-import { Router, CanMatchFn } from '@angular/router';
-import { AuthService } from '../services/auth/auth.service';
 
-export const loginRedirectGuard: CanMatchFn = () => {
-  const platformId = inject(PLATFORM_ID);
-  // فـSSR ما نديروالو
-  if (!isPlatformBrowser(platformId)) return true;
-
-  const auth = inject(AuthService);
+export const loginRedirectGuard: CanMatchFn = (): boolean | UrlTree => {
   const router = inject(Router);
+  const platformId = inject(PLATFORM_ID);
+  const isBrowser = isPlatformBrowser(platformId);
 
-  // ما مسجّلش الدخول → خليه يدخل للوجين/ريجيستر
-  if (!auth.token) return true;
+  const role = isBrowser ? (localStorage.getItem('role') as 'ADMIN'|'CLIENT'|'ARTISAN'|null) : null;
 
-  // مسجّل → حوّلو لداشبورد المناسب
-  const role = auth.role;
-  const to =
-    role === 'ARTISAN' ? '/artisan/home' :
-      role === 'CLIENT'  ? '/client/home'  :
-        role === 'ADMIN'   ? '/admin'        : '/';
-
-  // مهم: نرجعو UrlTree ماشي navigate (باش ما يكونش لووب)
-  return router.createUrlTree([to]);
+  if (!role) return true;
+  if (role === 'ADMIN')   return router.parseUrl('/admin/home');
+  if (role === 'ARTISAN') return router.parseUrl('/artisan/home');
+  return router.parseUrl('/client/home');
 };

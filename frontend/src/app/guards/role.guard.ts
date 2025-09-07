@@ -1,16 +1,16 @@
-// src/app/guards/role.guard.ts
+import { CanMatchFn, Router, UrlTree } from '@angular/router';
 import { inject, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
-import { Router, CanMatchFn } from '@angular/router';
-import { AuthService, Role } from '../services/auth/auth.service';
 
-export const roleGuard = (expected: Role): CanMatchFn => () => {
-  const platformId = inject(PLATFORM_ID);
-  if (!isPlatformBrowser(platformId)) return true;
+export type Role = 'ADMIN' | 'CLIENT' | 'ARTISAN';
 
-  const auth = inject(AuthService);
-  const router = inject(Router);
+export function roleGuard(...allowed: Role[]): CanMatchFn {
+  return (): boolean | UrlTree => {
+    const router = inject(Router);
+    const platformId = inject(PLATFORM_ID);
+    const isBrowser = isPlatformBrowser(platformId);
 
-  if (!auth.token) return router.createUrlTree(['/login']);
-  return auth.role === expected ? true : router.createUrlTree(['/login']);
-};
+    const role = isBrowser ? (localStorage.getItem('role') as Role | null) : null;
+    return role && allowed.includes(role) ? true : router.parseUrl('/login');
+  };
+}

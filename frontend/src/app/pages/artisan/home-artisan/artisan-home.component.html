@@ -1,3 +1,4 @@
+<!-- Cards with small stats -->
 <div class="grid md:grid-cols-2 xl:grid-cols-3 gap-4">
   <div *ngFor="let s of stats" class="rounded-xl border border-slate-800 bg-slate-900/60 p-5">
     <div class="text-sm text-slate-300">{{ s.label }}</div>
@@ -6,25 +7,37 @@
 </div>
 
 <div class="mt-6 grid lg:grid-cols-2 gap-4">
+  <!-- Recent reviews -->
   <div class="rounded-xl border border-slate-800 bg-slate-900/60 p-5">
     <div class="font-semibold mb-3">Avis récents</div>
+
     <div class="space-y-3 text-sm" *ngIf="recentReviews.length; else emptyRv">
       <div *ngFor="let r of recentReviews" class="p-3 rounded-lg bg-slate-800/60">
         <div class="flex items-center justify-between">
           <div class="font-medium">{{ r.author }}</div>
-          <div class="text-amber-300">{{ '⭐'.repeat(r.rating) }}</div>
+          <!-- Use || 0 to avoid NG8102 warning -->
+          <div class="text-amber-300">{{ '⭐'.repeat(r.rating || 0) }}</div>
         </div>
         <div class="text-slate-300 mt-2">{{ r.text }}</div>
       </div>
     </div>
-    <ng-template #emptyRv><div class="text-slate-400 text-sm">Aucun avis pour le moment.</div></ng-template>
+
+    <ng-template #emptyRv>
+      <div class="text-slate-400 text-sm">Aucun avis pour le moment.</div>
+    </ng-template>
   </div>
 
+  <!-- Quick actions -->
   <div class="rounded-xl border border-slate-800 bg-slate-900/60 p-5">
     <div class="font-semibold mb-3">Actions rapides</div>
     <div class="grid sm:grid-cols-2 gap-3">
-      <a routerLink="/artisan/requests" class="px-3 py-2 rounded-lg bg-sky-600 hover:bg-sky-700 text-center">Voir demandes</a>
-      <a routerLink="/artisan/quotes"   class="px-3 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-center">Mes devis</a>
+      <!-- routerLink requires RouterModule in the standalone component -->
+      <a routerLink="/artisan/requests" class="px-3 py-2 rounded-lg bg-sky-600 hover:bg-sky-700 text-center">
+        Voir demandes
+      </a>
+      <a routerLink="/artisan/quotes" class="px-3 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-center">
+        Mes devis
+      </a>
     </div>
   </div>
 </div>

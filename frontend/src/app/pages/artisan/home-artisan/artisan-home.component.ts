@@ -1,38 +1,47 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ArtisanApiService, Review } from '../../../services/api/artisan-api.service';
-import {RouterModule} from "@angular/router";
+import { RouterModule } from '@angular/router';
+import { Page, Quote, ArtisanApiService, Review, ArtisanInboxItem } from '../../../services/api/artisan-api.service';
+
+type Stat = { key: string; label: string; value: number };
 
 @Component({
-  standalone: true,
   selector: 'app-artisan-home',
-  imports: [CommonModule , RouterModule],
-  templateUrl: './artisan-home.component.html'
+  templateUrl: './artisan-home.component.html',
+  standalone: true,
+  imports: [CommonModule, RouterModule],
 })
 export class ArtisanHomeComponent implements OnInit {
-  private api = inject(ArtisanApiService);
-
-  stats = [
-    { key: 'pending', label: 'Demandes en attente', value: 0 },
-    { key: 'sentQuotes', label: 'Devis envoyés', value: 0 },
-    { key: 'reviews', label: 'Avis reçus', value: 0 },
+  stats: Stat[] = [
+    { key: 'inboxResponded', label: 'Demandes répondues', value: 0 },
+    { key: 'sentQuotes',     label: 'Devis envoyés',       value: 0 },
+    { key: 'avgRating',      label: 'Note moyenne',        value: 0 },
   ];
 
   recentReviews: Review[] = [];
 
-  ngOnInit() {
-    // إذا عندك getRequests فالـservice:
-    this.api.getRequests({ status: 'EN_ATTENTE', page: 0, size: 1 })
-      .subscribe(p => this.stats.find(s => s.key==='pending')!.value = p.totalElements);
+  constructor(private readonly api: ArtisanApiService) {}
 
-    this.api.listQuotes().subscribe(p =>
-      this.stats.find(s => s.key==='sentQuotes')!.value =
-        p.content.filter(q => q.status === 'ENVOYE' || q.status === 'ACCEPTE').length
-    );
+  private setStat(key: string, value: number) {
+    const s = this.stats.find((x) => x.key === key);
+    if (s) s.value = value;
+  }
 
-    this.api.listReviews().subscribe(p => {
-      this.stats.find(s => s.key==='reviews')!.value = p.totalElements;
+  ngOnInit(): void {
+    this.api.inbox(0, 50, 'ALL').subscribe((p: Page<ArtisanInboxItem>) => {
+      const responded = p.content.filter((i) => i.status === 'RESPONDED').length;
+      this.setStat('inboxResponded', responded);
+    });
+
+    this.api.listQuotes().subscribe((p: Page<Quote>) => {
+      this.setStat('sentQuotes', p.totalElements ?? p.content.length);
+    });
+
+    this.api.listReviews().subscribe((p: Page<Review>) => {
       this.recentReviews = p.content.slice(0, 3);
+      const ratings = p.content.map((r) => r.rating ?? 0);
+      const avg = ratings.length ? Math.round((ratings.reduce((a, b) => a + b, 0) / ratings.length) * 10) / 10 : 0;
+      this.setStat('avgRating', avg);
     });
   }
 }

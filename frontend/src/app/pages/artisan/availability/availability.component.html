@@ -1,60 +1,46 @@
-<div class="rounded-xl border border-slate-800 bg-slate-900/60 p-4">
-  <div class="font-semibold mb-3">Mes disponibilités</div>
+<div class="p-4">
+  <h2 class="text-xl font-bold mb-4">Availability</h2>
 
-  <div class="space-y-3" *ngIf="slots.length; else empty">
-    <div *ngFor="let s of slots; trackBy: trackById"
-         class="grid grid-cols-1 md:grid-cols-5 gap-3 bg-slate-800/50 p-3 rounded-lg">
-      <div class="font-medium">{{ dayLabel(s.dayOfWeek) }}</div>
-      <div>De: <span class="font-semibold">{{ s.startTime }}</span></div>
-      <div>À: <span class="font-semibold">{{ s.endTime }}</span></div>
-      <div class="md:col-span-2 flex gap-2">
-        <button (click)="remove(s.id)"
-                class="px-3 py-1 rounded bg-rose-600 hover:bg-rose-700 text-white text-sm">
-          Supprimer
-        </button>
+  <div class="grid md:grid-cols-2 gap-4">
+    <!-- List -->
+    <div class="rounded-xl border border-slate-800 bg-slate-900/60 p-4">
+      <div class="font-semibold mb-2">My slots</div>
+
+      <div *ngIf="loading">Loading…</div>
+      <div *ngIf="!loading && slots.length === 0" class="text-slate-400 text-sm">No slots.</div>
+
+      <div class="space-y-2" *ngIf="!loading">
+        <div *ngFor="let s of slots" class="flex items-center justify-between border border-slate-800 rounded p-2">
+          <div>
+            <div class="font-medium">{{ dayLabel(s.dayOfWeek) }}</div>
+            <div>De: <span class="font-semibold">{{ s.startTime }}</span></div>
+            <div>À: <span class="font-semibold">{{ s.endTime }}</span></div>
+          </div>
+          <button class="rounded border px-3 py-1" (click)="remove(s.id)">Delete</button>
+        </div>
       </div>
     </div>
-  </div>
-  <ng-template #empty>
-    <div class="text-slate-300 text-sm">Aucun créneau pour l’instant.</div>
-  </ng-template>
 
-  <div class="mt-4 border-t border-slate-800 pt-4">
-    <div class="font-semibold mb-2">Ajouter un créneau</div>
+    <!-- Add -->
+    <div class="rounded-xl border border-slate-800 bg-slate-900/60 p-4">
+      <div class="font-semibold mb-2">Add slot</div>
 
-    <form class="grid grid-cols-1 md:grid-cols-5 gap-3 items-end" (ngSubmit)="add()" #f="ngForm">
-      <div>
-        <label class="block text-xs text-slate-300 mb-1">Jour</label>
-        <select [(ngModel)]="draft.dayOfWeek" name="dayOfWeek"
-                class="w-full bg-slate-800 rounded-lg px-3 py-2 outline-none border border-slate-700">
-          <option [ngValue]="1">Lundi</option>
-          <option [ngValue]="2">Mardi</option>
-          <option [ngValue]="3">Mercredi</option>
-          <option [ngValue]="4">Jeudi</option>
-          <option [ngValue]="5">Vendredi</option>
-          <option [ngValue]="6">Samedi</option>
-          <option [ngValue]="7">Dimanche</option>
+      <div class="grid gap-2">
+        <select [(ngModel)]="draft.dayOfWeek" class="bg-slate-800 rounded p-2">
+          <option [ngValue]="1">Mon</option>
+          <option [ngValue]="2">Tue</option>
+          <option [ngValue]="3">Wed</option>
+          <option [ngValue]="4">Thu</option>
+          <option [ngValue]="5">Fri</option>
+          <option [ngValue]="6">Sat</option>
+          <option [ngValue]="7">Sun</option>
         </select>
-      </div>
 
-      <div>
-        <label class="block text-xs text-slate-300 mb-1">De</label>
-        <input type="time" [(ngModel)]="draft.startTime" name="startTime" required
-               class="w-full bg-slate-800 rounded-lg px-3 py-2 outline-none border border-slate-700">
-      </div>
+        <input type="time" [(ngModel)]="draft.startTime" class="bg-slate-800 rounded p-2" />
+        <input type="time" [(ngModel)]="draft.endTime" class="bg-slate-800 rounded p-2" />
 
-      <div>
-        <label class="block text-xs text-slate-300 mb-1">À</label>
-        <input type="time" [(ngModel)]="draft.endTime" name="endTime" required
-               class="w-full bg-slate-800 rounded-lg px-3 py-2 outline-none border border-slate-700">
+        <button class="rounded bg-emerald-600 px-3 py-2" (click)="add()">Add</button>
       </div>
-
-      <div class="md:col-span-2">
-        <button [disabled]="adding || !draft.startTime || !draft.endTime"
-                class="px-3 py-2 rounded-lg bg-sky-600 hover:bg-sky-700 text-white text-sm w-full md:w-auto">
-          {{ adding ? 'Ajout…' : 'Ajouter' }}
-        </button>
-      </div>
-    </form>
+    </div>
   </div>
 </div>

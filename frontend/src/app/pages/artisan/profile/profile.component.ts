@@ -1,10 +1,7 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import {
-  ArtisanApiService,
-  ArtisanProfile
-} from '../../../services/api/artisan-api.service';
+import { ArtisanApiService, ArtisanProfile } from '../../../services/api/artisan-api.service';
 
 @Component({
   standalone: true,
@@ -16,17 +13,18 @@ export class ArtisanProfileComponent implements OnInit {
   private api = inject(ArtisanApiService);
 
   model: ArtisanProfile = { metier: '', localisation: '', description: '' };
+  saving = false;
 
-  ngOnInit() {
-    this.api.getMyProfile().subscribe({
-      next: (p: ArtisanProfile) => this.model = { ...this.model, ...p }
-    });
+  ngOnInit(): void {
+    this.api.getMyProfile().subscribe(p => (this.model = p));
   }
 
-  save() {
+  /** Persist profile changes */
+  save(): void {
+    this.saving = true;
     this.api.updateMyProfile(this.model).subscribe({
-      next: () => alert('Profil enregistré'),
-      error: (e: any) => alert(e?.error?.message || 'Erreur')
+      next: p => (this.model = p),
+      complete: () => (this.saving = false)
     });
   }
 }

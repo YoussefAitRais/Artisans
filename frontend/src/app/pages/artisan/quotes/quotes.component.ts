@@ -1,7 +1,7 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ArtisanApiService, Quote } from '../../../services/api/artisan-api.service';
+import { ArtisanApiService, Page, Quote } from '../../../services/api/artisan-api.service';
 
 @Component({
   standalone: true,
@@ -12,26 +12,31 @@ import { ArtisanApiService, Quote } from '../../../services/api/artisan-api.serv
 export class ArtisanQuotesComponent implements OnInit {
   private api = inject(ArtisanApiService);
 
-  quotes: Quote[] = [];
   loading = false;
+  quotes: Quote[] = [];
 
-  // form بسيط لإرسال devis جديد
-  model = { demandeId: null as number | null, montant: null as number | null, message: '' };
+  // simple creator (اختياري من هنا)
+  model = { requestId: null as number|null, price: null as number|null, estimatedDays: null as number|null, message: '' };
 
-  ngOnInit() { this.refresh(); }
+  ngOnInit(){ this.refresh(); }
 
-  refresh() {
+  refresh(){
     this.loading = true;
-    this.api.listQuotes().subscribe({
-      next: (p) => this.quotes = p.content,
-      error: () => {},
+    this.api.myQuotes().subscribe({
+      next: (p: Page<Quote>) => this.quotes = p.content,
       complete: () => this.loading = false
     });
   }
 
-  create() {
-    if (!this.model.demandeId || !this.model.montant) return;
-    this.api.createQuote({ demandeId: this.model.demandeId, montant: this.model.montant, message: this.model.message || undefined })
-      .subscribe(() => { this.model = { demandeId: null, montant: null, message: '' }; this.refresh(); });
+  create(){
+    if (!this.model.requestId || !this.model.price) return;
+    this.api.createQuoteForRequest(this.model.requestId, {
+      price: this.model.price,
+      estimatedDays: this.model.estimatedDays ?? undefined,
+      message: this.model.message || undefined
+    }).subscribe(() => {
+      this.model = { requestId: null, price: null, estimatedDays: null, message: '' };
+      this.refresh();
+    });
   }
 }

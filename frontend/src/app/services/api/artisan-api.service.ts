@@ -1,14 +1,81 @@
-import { Injectable, inject } from '@angular/core';
+import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, map } from 'rxjs';
 
-/* ======= أنواع عامة ======= */
+/** Generic pagination wrapper (Spring Data Page) */
 export interface Page<T> {
   content: T[];
   totalElements: number;
-  totalPages?: number;
-  size?: number;
-  number?: number; // zero-based
+  totalPages: number;
+  number: number; // current page (0-based)
+  size: number;
+}
+
+/** ====== Types مستعملة عبر الصفحات ====== */
+export type InboxStatus = 'ALL' | 'PENDING' | 'RESPONDED';
+
+export interface ArtisanInboxItem {
+  id: number;
+  title: string;
+  city?: string;
+  description?: string;
+  desiredDate?: string; // yyyy-MM-dd
+  createdAt: string;    // ISO instant
+  status: 'PENDING' | 'RESPONDED';
+  categoryId?: number | null;
+  clientEmail?: string | null;
+}
+
+export interface Quote {
+  id: number;
+  requestId: number;
+  artisanId: number;
+  price: number;
+  message?: string | null;
+  status: 'SENT' | 'ACCEPTED' | 'REJECTED';
+  createdAt: string;
+  estimatedDays?: number | null;
+}
+
+export interface Review {
+  id: number;
+  author: string;
+  rating: number;
+  text: string;
+  createdAt?: string;
+}
+
+export interface AvailabilitySlot {
+  id?: number;
+  dayOfWeek: number;   // 1..7
+  startTime: string;   // "09:00"
+  endTime: string;     // "17:00"
+}
+
+export interface ArtisanProfile {
+  metier: string;
+  localisation: string;
+  description: string;
+}
+
+export interface PortfolioItem {
+  id: number;
+  title: string;
+  imageUrl: string;
+  description?: string;
+  createdAt?: string;
+}
+
+export interface ArtisanDto {
+  id: number;
+  name: string;
+  localisation?: string;
+  avatarUrl?: string;
+  categoryName?: string;
+  metier?: string;
+  rating?: number;
+  imageUrl?: string;
+  city?: string;
 }
 
 export interface Category {
@@ -17,209 +84,98 @@ export interface Category {
   description?: string;
 }
 
-/* ======= Public search DTO ======= */
-export interface ArtisanDto {
-  id: number;
-  name: string;
+export interface SearchArtisanParams {
   metier?: string;
   localisation?: string;
-  rating?: number;
-  avatarUrl?: string;
-  categoryName?: string;
-  // توافق مع كود قديم
-  city?: string;
-  imageUrl?: string;
+  q?: string;
+  page?: number;
+  size?: number;
 }
 
-/* ======= Profile ======= */
-export interface ArtisanProfile {
-  id?: number;
-  metier?: string;
-  localisation?: string;
-  description?: string;
-  category?: Category | { id: number };
-}
-
-/* ======= Requests ======= */
-export type RequestStatus =
-  | 'NOUVELLE' | 'EN_ATTENTE' | 'REPONDUE' | 'REFUSEE' | 'ANNULEE';
-
-export interface ArtisanRequest {
-  id: number;
-  titre: string;
-  ville?: string;
-  description?: string;
-  createdAt?: string;
-  status?: RequestStatus;
-  clientName?: string;
-}
-
-/* ======= Quotes (Devis) ======= */
-export type QuoteStatus = 'BROUILLON' | 'ENVOYE' | 'ACCEPTE' | 'REFUSE';
-
-export interface Quote {
-  id: number;
-  ref?: string;
-  montant: number;
-  message?: string;
-  dateProposition?: string;
-  demandeId: number;
-  status?: QuoteStatus;
-}
-
-/* ======= Reviews ======= */
-export interface Review {
-  id: number;
-  author: string;
-  rating: number;
-  text?: string;
-  createdAt?: string;
-}
-
-/* ======= Availability ======= */
-export interface AvailabilitySlot {
-  id: number;
-  dayOfWeek: number; // 1..7
-  startTime: string; // "09:00"
-  endTime: string;   // "13:00"
-}
-
-/* ======= Portfolio ======= */
-export interface PortfolioItem {
-  id: number;
-  url: string;
-  title?: string;
-  createdAt?: string;
-}
-
-/* ======= Inbox / Offers ======= */
-export interface ArtisanInboxItem {
-  id: number;
+export interface ClientRequestCreate {
   title: string;
-  city?: string;
-  description?: string;
-  desiredDate?: string; // yyyy-MM-dd
-  createdAt: string;    // ISO
-  status: 'PENDING' | 'RESPONDED' | 'ACCEPTED' | 'REJECTED' | 'CANCELLED' | 'COMPLETED';
-  categoryId?: number;
-  clientEmail?: string;
+  city: string;
+  description: string;
+  desiredDate: string; // yyyy-MM-dd
+  categoryId: number;
+  artisanId?: number;
 }
-
-export interface OfferCreateRequest {
-  price: number;
-  message?: string;
-  estimatedDays?: number;
-}
-
-export interface OfferResponse {
-  id: number;
-  requestId: number;
-  price: number;
-  message?: string;
-  estimatedDays?: number;
-  createdAt: string;
-  status: 'SENT' | 'WITHDRAWN' | 'ACCEPTED' | 'REJECTED';
-}
-
-/* ======= Service ======= */
 
 @Injectable({ providedIn: 'root' })
 export class ArtisanApiService {
-  private http = inject(HttpClient);
-  private readonly API = 'http://localhost:8091/api';
+  private readonly base = 'http://localhost:8091/api';
 
-  /* --- Public search (client side) --- */
-  searchArtisans(opts?: {
-    keyword?: string; categoryId?: number; city?: string; page?: number; size?: number;
-  }): Observable<Page<ArtisanDto>> {
-    let params = new HttpParams();
-    if (opts?.keyword)      params = params.set('q', opts.keyword);
-    if (opts?.categoryId)   params = params.set('categoryId', String(opts.categoryId));
-    if (opts?.city)         params = params.set('city', opts.city);
-    if (opts?.page != null) params = params.set('page', String(opts.page));
-    if (opts?.size != null) params = params.set('size', String(opts.size));
-    return this.http.get<Page<ArtisanDto>>(`${this.API}/artisans`, { params });
+  constructor(private http: HttpClient) {}
+
+  /** Inbox (artisan) — GET /api/artisan/requests */
+  inbox(page = 0, size = 10, status: InboxStatus = 'ALL', q?: string): Observable<Page<ArtisanInboxItem>> {
+    let params = new HttpParams().set('page', page).set('size', size).set('status', status);
+    if (q) params = params.set('q', q);
+    return this.http.get<Page<ArtisanInboxItem>>(`${this.base}/artisan/requests`, { params });
   }
 
-  /* --- Profile --- */
-  getMyProfile(): Observable<ArtisanProfile> {
-    return this.http.get<ArtisanProfile>(`${this.API}/artisan/me`);
-  }
-  updateMyProfile(dto: ArtisanProfile & { categoryId?: number }): Observable<ArtisanProfile> {
-    return this.http.put<ArtisanProfile>(`${this.API}/artisan/me`, dto);
+  /** Quotes (artisan) — GET /api/artisan/quotes */
+  myQuotes(page = 0, size = 20): Observable<Page<Quote>> {
+    const params = new HttpParams().set('page', page).set('size', size);
+    return this.http.get<Page<Quote>>(`${this.base}/artisan/quotes`, { params });
   }
 
-  /* --- Requests list for artisan --- */
-  getRequests(opts?: { status?: RequestStatus; page?: number; size?: number })
-    : Observable<Page<ArtisanRequest>> {
-    let params = new HttpParams();
-    if (opts?.status)       params = params.set('status', opts.status);
-    if (opts?.page != null) params = params.set('page', String(opts.page));
-    if (opts?.size != null) params = params.set('size', String(opts.size));
-    return this.http.get<Page<ArtisanRequest>>(`${this.API}/artisan/requests`, { params });
+  /** alias حفاظاً على توافق الشيفرات السابقة */
+  listQuotes(page = 0, size = 20): Observable<Page<Quote>> { return this.myQuotes(page, size); }
+
+  /** Create quote — POST /api/requests/{requestId}/quotes */
+  createQuoteForRequest(requestId: number, body: { price: number; estimatedDays?: number | null; message?: string | null }): Observable<Quote> {
+    const payload = { price: body.price, estimatedDays: body.estimatedDays ?? null, message: body.message ?? null };
+    return this.http.post<Quote>(`${this.base}/requests/${requestId}/quotes`, payload);
   }
 
-  /* --- Quotes --- */
-  listQuotes(): Observable<Page<Quote>> {
-    return this.http.get<Page<Quote>>(`${this.API}/artisan/quotes`);
-  }
-  createQuote(body: { demandeId: number; montant: number; message?: string }): Observable<Quote> {
-    return this.http.post<Quote>(`${this.API}/artisan/quotes`, body);
-  }
-  updateQuote(id: number, body: Partial<Quote>): Observable<Quote> {
-    return this.http.put<Quote>(`${this.API}/artisan/quotes/${id}`, body);
-  }
-  setQuoteStatus(id: number, status: QuoteStatus): Observable<Quote> {
-    return this.http.patch<Quote>(`${this.API}/artisan/quotes/${id}/status`, { status });
-  }
-
-  /* --- Availability --- */
+  /** Availability (optional endpoints إن كانت موجودة عندك) */
   listAvailability(): Observable<AvailabilitySlot[]> {
-    return this.http.get<AvailabilitySlot[]>(`${this.API}/artisan/availability`);
+    return this.http.get<AvailabilitySlot[]>(`${this.base}/artisan/availability`);
   }
-  addAvailability(slot: Omit<AvailabilitySlot, 'id'>): Observable<AvailabilitySlot> {
-    return this.http.post<AvailabilitySlot>(`${this.API}/artisan/availability`, slot);
+  addAvailability(slot: AvailabilitySlot): Observable<AvailabilitySlot> {
+    return this.http.post<AvailabilitySlot>(`${this.base}/artisan/availability`, slot);
   }
   deleteAvailability(id: number): Observable<void> {
-    return this.http.delete<void>(`${this.API}/artisan/availability/${id}`);
+    return this.http.delete<void>(`${this.base}/artisan/availability/${id}`);
   }
 
-  /* --- Portfolio --- */
+  /** Portfolio */
   listPortfolio(): Observable<PortfolioItem[]> {
-    return this.http.get<PortfolioItem[]>(`${this.API}/artisan/portfolio`);
+    return this.http.get<PortfolioItem[]>(`${this.base}/artisan/portfolio`);
   }
-  uploadPortfolio(file: File, title?: string): Observable<PortfolioItem> {
+  uploadPortfolio(file: File): Observable<PortfolioItem> {
     const fd = new FormData();
     fd.append('file', file);
-    if (title) fd.append('title', title);
-    return this.http.post<PortfolioItem>(`${this.API}/artisan/portfolio`, fd);
-  }
-  deletePortfolio(id: number): Observable<void> {
-    return this.http.delete<void>(`${this.API}/artisan/portfolio/${id}`);
+    return this.http.post<PortfolioItem>(`${this.base}/artisan/portfolio`, fd);
   }
 
-  /* --- Reviews --- */
-  listReviews(): Observable<Page<Review>> {
-    return this.http.get<Page<Review>>(`${this.API}/artisan/reviews`);
+  /** Reviews (artisan) */
+  listReviews(page = 0, size = 20): Observable<Page<Review>> {
+    const params = new HttpParams().set('page', page).set('size', size);
+    return this.http.get<Page<Review>>(`${this.base}/reviews/me`, { params });
   }
 
-  /* --- Inbox & Offers --- */
-  inbox(
-    page = 0,
-    size = 10,
-    status: 'PENDING' | 'RESPONDED' | 'ALL' = 'PENDING'
-  ): Observable<Page<ArtisanInboxItem>> {
-    let params = new HttpParams()
-      .set('page', String(page))
-      .set('size', String(size))
-      .set('status', status);
-    return this.http.get<Page<ArtisanInboxItem>>(`${this.API}/artisan/inbox`, { params });
+  /** Profile */
+  getMyProfile(): Observable<ArtisanProfile> { return this.http.get<ArtisanProfile>(`${this.base}/artisan/profile`); }
+  updateMyProfile(body: ArtisanProfile): Observable<ArtisanProfile> { return this.http.put<ArtisanProfile>(`${this.base}/artisan/profile`, body); }
+
+  /** Public helpers للواجهة ديال Client Home */
+  listCategories(): Observable<Category[]> {
+    // الـ backend كيرجع Page<CategoryResponse> فـ /api/categories
+    const params = new HttpParams().set('page', 0).set('size', 1000);
+    return this.http.get<Page<Category>>(`${this.base}/categories`, { params }).pipe(map(p => p.content));
   }
 
-  sendOffer(requestId: number, body: OfferCreateRequest): Observable<OfferResponse> {
-    return this.http.post<OfferResponse>(
-      `${this.API}/artisan/requests/${requestId}/offers`,
-      body
-    );
+  searchArtisans(params: SearchArtisanParams): Observable<Page<ArtisanDto>> {
+    let httpParams = new HttpParams();
+    Object.entries(params).forEach(([k, v]) => {
+      if (v !== undefined && v !== null && String(v) !== '') httpParams = httpParams.set(k, String(v));
+    });
+    return this.http.get<Page<ArtisanDto>>(`${this.base}/artisans/search`, { params: httpParams });
+  }
+
+  createRequest(body: ClientRequestCreate): Observable<{ id: number }> {
+    return this.http.post<{ id: number }>(`${this.base}/requests`, body);
   }
 }

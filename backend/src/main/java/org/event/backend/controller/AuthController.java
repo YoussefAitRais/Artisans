@@ -45,7 +45,7 @@ public class AuthController {
     }
 
     @PostMapping(path = "/login", consumes = "application/json", produces = "application/json")
-    public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest request) {
+    public ResponseEntity<?> login(@Valid @RequestBody LoginRequest request) {
         AuthResponse response = authenticationService.login(request);
 
         HttpHeaders headers = new HttpHeaders();

@@ -9,14 +9,11 @@ import java.util.List;
 import java.util.Optional;
 
 public interface QuoteRepository extends JpaRepository<Quote, Long> {
-
-    Page<Quote> findByRequest_Id(Long requestId, Pageable pageable);
+    boolean existsByRequest_IdAndArtisan_Id(Long requestId, Long artisanId);
 
     Page<Quote> findByArtisan_Id(Long artisanId, Pageable pageable);
 
-    Optional<Quote> findByIdAndArtisan_Id(Long id, Long artisanId);
+    List<Quote> findByRequest_Id(Long requestId);
 
-    boolean existsByRequest_IdAndArtisan_Id(Long requestId, Long artisanId);
-
-    List<Quote> findByRequest_Id(Long requestId); // for bulk status updates
+    Optional<Quote> findByIdAndArtisan_Id(Long id, Long artisanId); // <-- ضروري
 }

@@ -58,7 +58,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         try {
             username = jwtService.extractUsername(jwt);
         } catch (Exception e) {
-            // توكن ما صالحش → كمّل بلا ما تدير Auth
             filterChain.doFilter(request, response);
             return;
         }

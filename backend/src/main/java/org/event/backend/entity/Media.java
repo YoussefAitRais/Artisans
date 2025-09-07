@@ -72,14 +72,14 @@ public class Media {
     private boolean isCover = false;
 
     /** Technical metadata (optional) */
-    private Integer width;       // px
-    private Integer height;      // px
+    private Integer width;
+    private Integer height;
 
     @Column(name = "size_bytes")
-    private Long sizeBytes;      // file size
+    private Long sizeBytes;
 
     @Column(length = 100)
-    private String contentType;  // image/jpeg | image/png | image/webp
+    private String contentType;
 
     /** Audit columns */
     @Column(nullable = false, updatable = false)
@@ -94,7 +94,7 @@ public class Media {
         this.createdAt = now;
         this.updatedAt = now;
         if (this.status == null) {
-            this.status = MediaStatus.APPROVED; // default for MVP
+            this.status = MediaStatus.APPROVED;
         }
     }
 

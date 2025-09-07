@@ -5,18 +5,37 @@ import { ArtisanApiService, PortfolioItem } from '../../../services/api/artisan-
 @Component({
   standalone: true,
   selector: 'app-artisan-portfolio',
-  imports: [CommonModule],
-  templateUrl: './portfolio.component.html'
+  template: `
+  <div class="p-4 space-y-4">
+    <h2 class="text-xl font-bold">Portfolio</h2>
+
+    <input type="file" (change)="onFile($event)" />
+
+    <div class="grid gap-3 md:grid-cols-3">
+      <div class="rounded border p-2" *ngFor="let it of items">
+        <img [src]="it.imageUrl" alt="" class="w-full rounded mb-2">
+        <div class="font-medium">{{ it.title }}</div>
+        <div class="text-sm text-slate-500" *ngIf="it.description">{{ it.description }}</div>
+      </div>
+    </div>
+  </div>
+  `,
+  imports: [CommonModule]
 })
 export class ArtisanPortfolioComponent implements OnInit {
   private api = inject(ArtisanApiService);
+
   items: PortfolioItem[] = [];
 
-  ngOnInit() { this.reload(); }
-  reload() { this.api.listPortfolio().subscribe(x => this.items = x); }
+  ngOnInit(): void { this.reload(); }
 
-  upload(ev: Event) {
-    const f = (ev.target as HTMLInputElement).files?.[0];
+  reload(): void {
+    this.api.listPortfolio().subscribe((x: PortfolioItem[]) => (this.items = x));
+  }
+
+  onFile(e: Event) {
+    const input = e.target as HTMLInputElement;
+    const f = input.files?.[0];
     if (!f) return;
     this.api.uploadPortfolio(f).subscribe(() => this.reload());
   }

@@ -2,10 +2,8 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { forkJoin, map, Observable } from 'rxjs';
 
-// نفس الـ API base ديال باقي الخدمات
 const API_BASE = 'http://localhost:8091';
 
-// صفحة عامة
 export interface Page<T> {
   content: T[];
   totalElements: number;
@@ -29,7 +27,7 @@ export interface CategoryUpdateRequest {
   description?: string;
 }
 
-// ===== Clients DTOs (مطابقة للبّاك لي وريتيني) =====
+// ===== Clients DTOs  =====
 export interface ClientResponse {
   id: number;
   nom: string;
@@ -116,8 +114,7 @@ export class AdminApi {
     return this.http.patch<ServiceRequestResponse>(`${API_BASE}/api/admin/requests/${id}/status`, null, { params });
   }
 
-  // --------- Stats بسيطة بلا endpoint خاص ----------
-  // كنجيب totals باستعمال totalElements من صفحات بحجم 1
+
   stats(): Observable<{
     categories: number;
     clients: number;
@@ -129,7 +126,6 @@ export class AdminApi {
     const clients$    = this.clients('', 0, one).pipe(map(p => p.totalElements));
     const allReq$     = this.requests({ page: 0, size: one }).pipe(map(p => p.totalElements));
 
-    // كل ستاتيوس بوحدو
     const statuses: RequestStatus[] = ['PENDING', 'RESPONDED', 'ACCEPTED', 'REJECTED', 'CANCELLED', 'COMPLETED'];
     const perStatus$ = statuses.map(s =>
       this.requests({ status: s, page: 0, size: one }).pipe(map(p => [s, p.totalElements] as const))

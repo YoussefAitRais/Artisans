@@ -1,188 +1,162 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule, NgForm } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
-import { HttpClient } from '@angular/common/http';
+import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { Router } from '@angular/router';
+import { HttpClient, HttpParams } from '@angular/common/http';
+import { AuthService, RegisterRequest, Role } from '../services/auth/auth.service';
 
-import {
-  AuthService,
-  ClientRegisterRequest,
-  ArtisanRegisterRequest,
-  AuthSession
-} from '../services/auth/auth.service';
+type Category = { id: number; name: string };
 
-type RoleChoice = 'CLIENT' | 'ARTISAN';
-
-interface Category {
-  id: number;
-  name: string;
-  description?: string;
+// Custom validator for password confirmation
+function passwordMatchValidator(form: FormGroup) {
+  const password = form.get('password');
+  const confirmPassword = form.get('confirmPassword');
+  return password && confirmPassword && password.value === confirmPassword.value
+    ? null : { passwordMismatch: true };
 }
-
-interface Page<T> {
-  content: T[];
-  totalElements: number;
-}
-
-type RegisterFormModel = {
-  // common
-  firstName: string;
-  lastName: string;
-  email: string;
-  password: string;
-  confirmerPassword: string;
-  role: RoleChoice | '';
-
-  // artisan-only
-  categoryId: number | null;
-  metier?: string;
-  localisation?: string;
-  description?: string;
-};
 
 @Component({
   selector: 'app-register',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink],
-  templateUrl: './register.component.html',
-  styleUrls: ['./register.component.css'],
+  imports: [CommonModule, ReactiveFormsModule],
+  templateUrl: './register.component.html'
 })
-export class RegisterComponent implements OnInit {
-  // ------------ state ------------
-  registerObj: RegisterFormModel = {
-    firstName: '',
-    lastName: '',
-    email: '',
-    password: '',
-    confirmerPassword: '',
-    role: '',
-    categoryId: null,
-    metier: '',
-    localisation: '',
-    description: '',
-  };
+export class RegisterComponent {
+  private auth = inject(AuthService);
+  private router = inject(Router);
+  private http = inject(HttpClient);
+  private fb = inject(FormBuilder);
 
   categories: Category[] = [];
+  categoriesLoading = false;
   loading = false;
-  errorMsg = '';
+  error = '';
+  success = '';
 
-  // ------------ services ------------
-  private auth = inject(AuthService);
-  private http = inject(HttpClient);
-  private router = inject(Router);
+  registerForm: FormGroup = this.fb.group({
+    firstName: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(120)]],
+    lastName: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(120)]],
+    email: ['', [Validators.required, Validators.email]],
+    password: ['', [Validators.required, Validators.minLength(8)]],
+    confirmPassword: ['', [Validators.required]],
+    role: ['CLIENT', [Validators.required]],
+    categoryId: [null],
+    metier: [''],
+    localisation: [''],
+    description: ['']
+  }, { validators: passwordMatchValidator });
 
-  private readonly API_BASE = 'http://localhost:8091';
-
-  // ------------ lifecycle ------------
   ngOnInit() {
-    // نقدر نحمّلها مباشرة أو بعد اختيار ARTISAN
     this.loadCategories();
-  }
-
-  // ------------ helpers ------------
-  setRole(role: RoleChoice) {
-    this.registerObj.role = role;
-
-    if (role === 'CLIENT') {
-      this.registerObj.categoryId = null;
-      this.registerObj.metier = '';
-      this.registerObj.localisation = '';
-      this.registerObj.description = '';
-    } else if (role === 'ARTISAN' && this.categories.length === 0) {
-      this.loadCategories();
-    }
-  }
-
-  private toClientPayload(): ClientRegisterRequest {
-    return {
-      email: this.registerObj.email.trim(),
-      password: this.registerObj.password,
-      nom: this.registerObj.firstName.trim(),
-      prenom: this.registerObj.lastName.trim(),
-    };
-  }
-
-  private toArtisanPayload(): ArtisanRegisterRequest {
-    return {
-      email: this.registerObj.email.trim(),
-      password: this.registerObj.password,
-      nom: this.registerObj.firstName.trim(),
-      prenom: this.registerObj.lastName.trim(),
-      metier: (this.registerObj.metier || '').trim(),
-      localisation: (this.registerObj.localisation || '').trim() || undefined,
-      description: (this.registerObj.description || '').trim() || undefined,
-      categoryId: Number(this.registerObj.categoryId),
-    };
+    this.setupRoleValidation();
   }
 
   private loadCategories() {
-    this.http.get<Page<Category>>(`${this.API_BASE}/api/categories`).subscribe({
-      next: (res) => {
-        this.categories = res?.content ?? [];
-      },
-      error: (e) => {
-        console.error('Categories load failed', e);
-        this.categories = [];
+    this.categoriesLoading = true;
+    const params = new HttpParams().set('page', 0).set('size', 100);
+    this.http.get<{content: Category[]}>('http://localhost:8091/api/categories', { params })
+      .subscribe({
+        next: (p) => this.categories = p?.content ?? [],
+        complete: () => this.categoriesLoading = false,
+        error: () => this.categoriesLoading = false
+      });
+  }
+
+  private setupRoleValidation() {
+    this.registerForm.get('role')?.valueChanges.subscribe(role => {
+      const categoryControl = this.registerForm.get('categoryId');
+      const metierControl = this.registerForm.get('metier');
+      
+      if (role === 'ARTISAN') {
+        categoryControl?.setValidators([Validators.required]);
+        metierControl?.setValidators([Validators.required, Validators.maxLength(120)]);
+      } else {
+        categoryControl?.clearValidators();
+        metierControl?.clearValidators();
+        categoryControl?.setValue(null);
+        metierControl?.setValue('');
+        this.registerForm.get('localisation')?.setValue('');
+        this.registerForm.get('description')?.setValue('');
       }
+      categoryControl?.updateValueAndValidity();
+      metierControl?.updateValueAndValidity();
     });
   }
 
-  // ------------ submit ------------
-  onRegisterSubmit(form: NgForm) {
-    this.errorMsg = '';
+  trackCat = (_: number, c: Category) => c.id;
 
-    if (!this.registerObj.role) {
-      this.errorMsg = 'Please choose a role: CLIENT or ARTISAN.';
+  setRole(role: Role) {
+    this.registerForm.patchValue({ role });
+  }
+
+  get isArtisan() {
+    return this.registerForm.get('role')?.value === 'ARTISAN';
+  }
+
+  getFieldError(fieldName: string): string | null {
+    const field = this.registerForm.get(fieldName);
+    if (field?.errors && field.touched) {
+      if (field.errors['required']) return `${this.getFieldLabel(fieldName)} is required`;
+      if (field.errors['email']) return 'Please enter a valid email address';
+      if (field.errors['minlength']) return `${this.getFieldLabel(fieldName)} must be at least ${field.errors['minlength'].requiredLength} characters`;
+      if (field.errors['maxlength']) return `${this.getFieldLabel(fieldName)} must be no more than ${field.errors['maxlength'].requiredLength} characters`;
+    }
+    if (this.registerForm.errors?.['passwordMismatch'] && (fieldName === 'confirmPassword') && field?.touched) {
+      return 'Passwords do not match';
+    }
+    return null;
+  }
+
+  private getFieldLabel(fieldName: string): string {
+    const labels: { [key: string]: string } = {
+      firstName: 'First name',
+      lastName: 'Last name',
+      email: 'Email',
+      password: 'Password',
+      confirmPassword: 'Confirm password',
+      categoryId: 'Category',
+      metier: 'Craft/Trade'
+    };
+    return labels[fieldName] || fieldName;
+  }
+
+  onSubmit() {
+    this.error = '';
+    this.success = '';
+
+    // Mark all fields as touched to show validation errors
+    this.registerForm.markAllAsTouched();
+
+    if (this.registerForm.invalid) {
+      this.error = 'Please fix the validation errors above.';
       return;
     }
 
-    if (!form.valid) {
-      this.errorMsg = 'Please fill all required fields.';
-      return;
-    }
-
-    if (this.registerObj.password !== this.registerObj.confirmerPassword) {
-      this.errorMsg = 'Passwords do not match.';
-      return;
-    }
-
-    if (this.registerObj.role === 'ARTISAN') {
-      if (this.registerObj.categoryId == null) {
-        this.errorMsg = 'Please choose a category.';
-        return;
-      }
-      if (!this.registerObj.metier || !this.registerObj.metier.trim()) {
-        this.errorMsg = 'Please enter your craft (metier).';
-        return;
-      }
-    }
+    const formValue = this.registerForm.value;
+    const payload: RegisterRequest = {
+      // Map frontend field names to backend expected names
+      nom: formValue.firstName.trim(),      // Backend expects 'nom'
+      prenom: formValue.lastName.trim(),    // Backend expects 'prenom' 
+      email: formValue.email.trim(),
+      password: formValue.password,
+      role: formValue.role,
+      categoryId: formValue.role === 'ARTISAN' ? formValue.categoryId : null,
+      metier: formValue.role === 'ARTISAN' ? (formValue.metier || null) : null,
+      localisation: formValue.role === 'ARTISAN' ? (formValue.localisation || null) : null,
+      description: formValue.role === 'ARTISAN' ? (formValue.description || null) : null
+    };
 
     this.loading = true;
-
-    const req$ =
-      this.registerObj.role === 'CLIENT'
-        ? this.auth.registerClient(this.toClientPayload())
-        : this.auth.registerArtisan(this.toArtisanPayload());
-
-    req$.subscribe({
-      next: (session: AuthSession) => {
-        if (session.role === 'ADMIN') {
-          this.router.navigate(['/admin']);
-        } else if (session.role === 'ARTISAN') {
-          this.router.navigate(['/artisan']);
-        } else {
-          this.router.navigate(['/client']);
-        }
+    this.auth.register(payload).subscribe({
+      next: () => {
+        this.success = 'Registration successful! Redirecting to login...';
+        setTimeout(() => this.router.navigate(['/login']), 1500);
       },
-      error: (err: any) => {
-        this.loading = false;
-        this.errorMsg =
-          err?.error?.message ||
-          err?.message ||
-          'Registration failed. Please try again.';
-        console.error('Register error', err);
+      error: (e) => {
+        console.error('Registration error:', e);
+        this.error = e?.error?.message || 'Registration failed. Please try again.';
       },
-      complete: () => (this.loading = false),
+      complete: () => this.loading = false
     });
   }
 }

@@ -90,8 +90,8 @@ public class SecurityConfig {
                         // Public GETs
                         .requestMatchers(HttpMethod.GET, "/api/artisans/**", "/api/media/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/categories/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/artisans/**", "/api/media/**").permitAll()
-                        // Auth endpoints + docs
+
+                        // Auth & docs
                         .requestMatchers(
                                 "/api/auth/register-client",
                                 "/api/auth/register-artisan",
@@ -100,22 +100,24 @@ public class SecurityConfig {
                                 "/v3/api-docs/**"
                         ).permitAll()
 
-                        // -------- Domain rules you asked for --------
-                        // Client-owned requests
+                        // ---- مسارات خاصة (خليها قبل القاعدة العامة ديال /api/requests/**) ----
+                        // Artisan كيصيفط quote على request
+                        .requestMatchers(HttpMethod.POST, "/api/requests/*/quotes").hasRole("ARTISAN")
+                        // Artisan يحدّث/يمسح quote ديالو
+                        .requestMatchers(HttpMethod.PUT,    "/api/quotes/**").hasRole("ARTISAN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/quotes/**").hasRole("ARTISAN")
+                        // Client كيقابل quote
+                        .requestMatchers(HttpMethod.POST, "/api/quotes/*/accept").hasRole("CLIENT")
+
+                        // -------- قواعد عامة حسب الدومين --------
                         .requestMatchers("/api/requests/**").hasRole("CLIENT")
-                        // Artisan browse requests
                         .requestMatchers("/api/artisan/requests/**").hasRole("ARTISAN")
-                        // Admin requests management
                         .requestMatchers("/api/admin/requests/**").hasRole("ADMIN")
-
-                        // Other admin endpoints (categories, users, …)
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
-
-                        // Role areas
                         .requestMatchers("/api/artisan/**").hasRole("ARTISAN")
                         .requestMatchers("/api/client/**").hasRole("CLIENT")
 
-                        // Any other endpoint requires auth
+                        // أي حاجة أخرى تتطلب auth
                         .anyRequest().authenticated()
                 )
 

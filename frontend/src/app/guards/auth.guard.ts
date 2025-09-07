@@ -1,14 +1,12 @@
-// src/app/guards/auth.guard.ts
+import { CanMatchFn, Router, UrlTree } from '@angular/router';
 import { inject, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
-import { Router, CanMatchFn } from '@angular/router';
-import { AuthService } from '../services/auth/auth.service';
 
-export const authGuard: CanMatchFn = () => {
-  const platformId = inject(PLATFORM_ID);
-  if (!isPlatformBrowser(platformId)) return true;
-
-  const auth = inject(AuthService);
+export const authCanMatch: CanMatchFn = (): boolean | UrlTree => {
   const router = inject(Router);
-  return auth.token ? true : router.createUrlTree(['/login']);
+  const platformId = inject(PLATFORM_ID);
+  const isBrowser = isPlatformBrowser(platformId);
+
+  const token = isBrowser ? localStorage.getItem('token') : null;
+  return token ? true : router.parseUrl('/login');
 };

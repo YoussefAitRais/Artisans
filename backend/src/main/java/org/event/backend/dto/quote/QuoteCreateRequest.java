@@ -1,14 +1,8 @@
 package org.event.backend.dto.quote;
 
-import jakarta.validation.constraints.DecimalMin;
-import jakarta.validation.constraints.Digits;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.*;
 import java.math.BigDecimal;
 
-/**
- * Payload sent by an artisan to create a quote.
- */
 public class QuoteCreateRequest {
 
     @NotNull
@@ -16,11 +10,13 @@ public class QuoteCreateRequest {
     @Digits(integer = 10, fraction = 2)
     private BigDecimal price;
 
-    // optional but if provided it must be >= 1
-    private Integer estimatedDays;
+    @Min(value = 1, message = "Estimated days must be >= 1")
+    private Integer estimatedDays; // optional but validated if present
 
     @Size(max = 1000)
     private String message;
+
+    public QuoteCreateRequest() {}
 
     public BigDecimal getPrice() { return price; }
     public void setPrice(BigDecimal price) { this.price = price; }

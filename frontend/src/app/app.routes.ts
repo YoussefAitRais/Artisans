@@ -1,13 +1,12 @@
-// src/app/app.routes.ts
-import { Routes } from '@angular/router';
+import { Routes, UrlTree } from '@angular/router';
+import { inject } from '@angular/core';
 
-// Public
+// Pages/Layout
 import { HomebannerComponent } from './homebanner/homebanner.component';
 import { LoginComponent } from './login/login.component';
 import { RegisterComponent } from './register/register.component';
 import { CategoriesComponent } from './pages/public/categories/categories.component';
 
-// Dashboards
 import { AdminDashboardComponent } from './layout/admin-dashboard/admin-dashboard.component';
 import { AdminHomeComponent } from './pages/admin/home-admin/admin-home.component';
 import { AdminUsersComponent } from './pages/admin/users/admin-users.component';
@@ -30,23 +29,29 @@ import { ArtisanPortfolioComponent } from './pages/artisan/portfolio/portfolio.c
 import { ArtisanReviewsComponent } from './pages/artisan/reviews/reviews.component';
 import { ArtisanProfileComponent } from './pages/artisan/profile/profile.component';
 
-// Guards
-import { authGuard } from './guards/auth.guard';
+// Guards (functional)
+import { authCanMatch } from './guards/auth.guard';
 import { roleGuard } from './guards/role.guard';
 import { loginRedirectGuard } from './guards/login-redirect.guard';
 
 export const routes: Routes = [
-  // Public
   { path: '', component: HomebannerComponent, pathMatch: 'full' },
-  { path: 'login', component: LoginComponent, canMatch: [loginRedirectGuard] },
+
+  // Login/Register (ما تدخلش ليهم واخا عندك session)
+  { path: 'login',    component: LoginComponent,    canMatch: [loginRedirectGuard] },
   { path: 'register', component: RegisterComponent, canMatch: [loginRedirectGuard] },
+
+  //{ path: 'login',    component: LoginComponent,    canMatch: [loginRedirectGuard] },
+  //{ path: 'register', component: RegisterComponent, canMatch: [loginRedirectGuard] },
+
+  // Public
   { path: 'categories', component: CategoriesComponent },
 
-  // Admin
+  // Admin area
   {
     path: 'admin',
     component: AdminDashboardComponent,
-    canMatch: [authGuard, roleGuard('ADMIN')],
+    canMatch: [authCanMatch, roleGuard('ADMIN')],
     children: [
       { path: '', redirectTo: 'home', pathMatch: 'full' },
       { path: 'home', component: AdminHomeComponent },
@@ -57,11 +62,11 @@ export const routes: Routes = [
     ]
   },
 
-  // Client
+  // Client area
   {
     path: 'client',
     component: ClientDashboardComponent,
-    canMatch: [authGuard, roleGuard('CLIENT')],
+    canMatch: [authCanMatch, roleGuard('CLIENT')],
     children: [
       { path: '', redirectTo: 'home', pathMatch: 'full' },
       { path: 'home', component: ClientHomeComponent },
@@ -71,15 +76,14 @@ export const routes: Routes = [
     ]
   },
 
-  // Artisan
-
+  // Artisan area
   {
     path: 'artisan',
     component: ArtisanDashboardComponent,
-    canMatch: [authGuard, roleGuard('ARTISAN')],
+    canMatch: [authCanMatch, roleGuard('ARTISAN')],
     children: [
       { path: '', redirectTo: 'home', pathMatch: 'full' },
-      { path: 'home',         component: ArtisanHomeComponent },      // <-- كيستعمل الملف اللي صلحناه
+      { path: 'home',         component: ArtisanHomeComponent },
       { path: 'requests',     component: InboxComponent },
       { path: 'quotes',       component: ArtisanQuotesComponent },
       { path: 'availability', component: ArtisanAvailabilityComponent },
@@ -89,6 +93,5 @@ export const routes: Routes = [
     ]
   },
 
-  // Fallback
   { path: '**', redirectTo: '' }
 ];

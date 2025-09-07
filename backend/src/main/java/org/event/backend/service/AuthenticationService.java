@@ -23,12 +23,12 @@ public class AuthenticationService {
     private final AuthenticationManager authenticationManager;
 
     public AuthenticationService(UtilisateurRepository utilisateurRepository,
-                                 CategoryRepository categoryRepository,       // <-- NEW
+                                 CategoryRepository categoryRepository,
                                  PasswordEncoder passwordEncoder,
                                  JwtService jwtService,
                                  AuthenticationManager authenticationManager) {
         this.utilisateurRepository = utilisateurRepository;
-        this.categoryRepository = categoryRepository;      // <-- NEW
+        this.categoryRepository = categoryRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
         this.authenticationManager = authenticationManager;
@@ -81,7 +81,7 @@ public class AuthenticationService {
                 req.getLocalisation() == null ? null : req.getLocalisation().trim(),
                 req.getDescription() == null ? null : req.getDescription().trim()
         );
-        artisan.setCategory(cat); // <-- لازم
+        artisan.setCategory(cat);
 
         utilisateurRepository.save(artisan);
 

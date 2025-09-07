@@ -1,74 +1,16 @@
-<section class="bg-[#0f172a] min-h-screen text-white">
-  <div class="max-w-7xl mx-auto px-4 py-10">
-    <!-- Header + Search -->
-    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
-      <h1 class="text-3xl sm:text-4xl font-extrabold">Catégories</h1>
+<div class="max-w-3xl mx-auto p-6">
+  <h2 class="text-xl font-semibold mb-4">Categories</h2>
 
-      <div class="relative w-full md:w-[28rem]">
-        <input
-          [(ngModel)]="q"
-          type="text"
-          placeholder="Rechercher une catégorie…"
-          class="w-full bg-slate-800/80 border border-slate-700 rounded-full pl-4 pr-11 py-2 outline-none focus:border-sky-500 placeholder:text-slate-400"
-        />
-        <svg class="w-5 h-5 absolute right-3 top-2.5 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M21 21l-4.35-4.35m0 0A7.5 7.5 0 104.5 4.5a7.5 7.5 0 0012.15 12.15z" />
-        </svg>
-      </div>
+  <div *ngIf="error" class="mb-3 p-2 rounded bg-rose-100 text-rose-700">{{ error }}</div>
+  <div *ngIf="success" class="mb-3 p-2 rounded bg-emerald-100 text-emerald-700">{{ success }}</div>
+
+  <div *ngIf="loading" class="text-slate-500">Loading…</div>
+
+  <div class="grid gap-3" *ngIf="!loading">
+    <div *ngFor="let c of items" class="rounded border p-3">
+      <div class="font-medium">{{ c.name }}</div>
+      <div class="text-slate-500 text-sm">{{ c.description || '—' }}</div>
     </div>
-
-    <!-- Loading skeleton -->
-    <div *ngIf="loading" class="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-      <div *ngFor="let _ of [0,1,2,3,4,5,6,7]"
-           class="rounded-2xl border border-slate-800 bg-slate-900/60 p-4 animate-pulse">
-        <div class="w-full aspect-[4/3] rounded-xl bg-slate-700/50 mb-4"></div>
-        <div class="h-5 bg-slate-700/60 rounded w-2/3 mb-2"></div>
-        <div class="h-4 bg-slate-700/50 rounded w-5/6"></div>
-      </div>
-    </div>
-
-    <!-- Error -->
-    <div *ngIf="!loading && errorMsg" class="text-rose-300 bg-rose-900/20 border border-rose-800 rounded-lg p-4">
-      {{ errorMsg }}
-      <button (click)="load()" class="ml-2 underline hover:no-underline">Réessayer</button>
-    </div>
-
-    <!-- Empty -->
-    <div *ngIf="!loading && !errorMsg && !filtered.length" class="text-slate-400">
-      Aucune catégorie trouvée.
-    </div>
-
-    <!-- Grid -->
-    <div *ngIf="!loading && !errorMsg && filtered.length"
-         class="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-      <a
-        *ngFor="let c of filtered; trackBy: trackById"
-        [routerLink]="['/artisans']"
-        [queryParams]="{ categoryId: c.id }"
-        class="group block overflow-hidden rounded-2xl border border-slate-800 bg-slate-900/60 hover:bg-slate-900 transition ring-1 ring-transparent hover:ring-sky-700/30 shadow-sm hover:shadow-sky-900/20"
-      >
-        <!-- Image -->
-        <div class="relative w-full aspect-[4/3] overflow-hidden">
-          <img
-            [src]="imageFor(c)"
-            [alt]="c.name"
-            loading="lazy"
-            class="h-full w-full object-cover transition duration-300 group-hover:scale-105"
-          />
-          <div class="absolute inset-0 bg-gradient-to-t from-slate-900/40 via-slate-900/10 to-transparent"></div>
-        </div>
-
-        <!-- Body -->
-        <div class="p-5">
-          <div class="text-lg font-semibold group-hover:text-white">{{ c.name }}</div>
-          <p class="text-sm text-slate-300 mt-1 line-clamp-2">{{ c.description || '—' }}</p>
-
-          <div class="mt-4 text-sky-400 text-sm">
-            Voir les artisans →
-          </div>
-        </div>
-      </a>
-    </div>
+    <div *ngIf="items.length === 0" class="text-slate-400">No categories.</div>
   </div>
-</section>
+</div>

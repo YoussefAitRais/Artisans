@@ -9,7 +9,7 @@ import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/rou
 })
 export class AdminDashboardComponent {
   adminEmail = 'admin@example.com';
-  sidebarOpen = false; // للموبايل
+  sidebarOpen = false;
 
   constructor(private router: Router) {}
 

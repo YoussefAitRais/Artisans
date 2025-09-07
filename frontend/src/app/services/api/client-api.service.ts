@@ -4,7 +4,6 @@ import { Observable } from 'rxjs';
 
 const API_BASE = 'http://localhost:8091';
 
-/* ===== Types مشتركة ===== */
 export interface Page<T> {
   content: T[];
   totalElements: number;
@@ -81,7 +80,6 @@ export class ClientApi {
     return this.http.delete<void>(`${API_BASE}/api/requests/${id}`);
   }
 
-  // (اختياري) لو بغيت استعمال profile:
   getMe() { return this.http.get<ClientResponse>(`${API_BASE}/api/client/me`); }
   updateMe(req: ClientUpdateRequest) { return this.http.put<ClientResponse>(`${API_BASE}/api/client/me`, req); }
 }

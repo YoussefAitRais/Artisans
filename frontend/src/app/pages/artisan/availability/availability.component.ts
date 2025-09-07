@@ -6,56 +6,61 @@ import { ArtisanApiService, AvailabilitySlot } from '../../../services/api/artis
 @Component({
   standalone: true,
   selector: 'app-artisan-availability',
-  imports: [CommonModule, FormsModule],
-  templateUrl: './availability.component.html'
+  template: `
+  <div class="p-4 space-y-4">
+    <h2 class="text-xl font-bold">Disponibilités</h2>
+
+    <div class="grid gap-2 md:grid-cols-4">
+      <select [(ngModel)]="draft.dayOfWeek" class="border rounded p-2">
+        <option [ngValue]="1">Mon</option><option [ngValue]="2">Tue</option>
+        <option [ngValue]="3">Wed</option><option [ngValue]="4">Thu</option>
+        <option [ngValue]="5">Fri</option><option [ngValue]="6">Sat</option>
+        <option [ngValue]="7">Sun</option>
+      </select>
+      <input type="time" [(ngModel)]="draft.startTime" class="border rounded p-2" />
+      <input type="time" [(ngModel)]="draft.endTime" class="border rounded p-2" />
+      <button class="bg-sky-600 text-white rounded px-3 py-2" (click)="add()">Ajouter</button>
+    </div>
+
+    <div *ngIf="loading">Loading…</div>
+
+    <ul class="space-y-2" *ngIf="!loading">
+      <li *ngFor="let s of slots">
+        <span class="text-sm">{{ s.dayOfWeek }} {{ s.startTime }}-{{ s.endTime }}</span>
+        <button class="ml-2 border rounded px-2 py-0.5" (click)="remove(s.id!)">Supprimer</button>
+      </li>
+    </ul>
+  </div>`,
+  imports: [CommonModule, FormsModule]
 })
 export class ArtisanAvailabilityComponent implements OnInit {
   private api = inject(ArtisanApiService);
 
   slots: AvailabilitySlot[] = [];
-  adding = false;
+  loading = false;
 
-  // form draft مطابق للتايب: dayOfWeek / startTime / endTime
-  draft: Omit<AvailabilitySlot, 'id'> = {
-    dayOfWeek: 1,
-    startTime: '09:00',
-    endTime: '13:00'
-  };
+  draft: AvailabilitySlot = { dayOfWeek: 1, startTime: '09:00', endTime: '17:00' };
 
-  ngOnInit() { this.refresh(); }
+  ngOnInit(): void { this.reload(); }
 
-  refresh() {
+  reload(): void {
+    this.loading = true;
     this.api.listAvailability().subscribe({
-      next: s => this.slots = s ?? []
+      next: (x: AvailabilitySlot[]) => (this.slots = x),
+      complete: () => (this.loading = false)
     });
   }
 
-  dayLabel(d: number) {
-    // 1..7
-    return ['Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi','Dimanche'][d - 1] || d;
-    // إذا كان الباك كيرجع 0..6 بدّل ل: [d] مباشرة أو +1 حسب الحاجة
-  }
-
-  add() {
-    this.adding = true;
+  add(): void {
     this.api.addAvailability(this.draft).subscribe({
-      next: () => {
-        this.draft = { dayOfWeek: 1, startTime: '09:00', endTime: '13:00' };
-        this.refresh();
-      },
-      error: e => alert(e?.error?.message || 'Erreur'),
-      complete: () => this.adding = false
+      next: (s: AvailabilitySlot) => this.slots.push(s),
+      complete: () => (this.draft = { dayOfWeek: 1, startTime: '09:00', endTime: '17:00' })
     });
   }
 
-  remove(id?: number) {
-    if (id == null) return;
-    if (!confirm('Supprimer ce créneau ?')) return;
-    this.api.deleteAvailability(id).subscribe({
-      next: () => this.refresh(),
-      error: e => alert(e?.error?.message || 'Erreur')
+  remove(id: number): void {
+    this.api.deleteAvailability(id).subscribe(() => {
+      this.slots = this.slots.filter(x => x.id !== id);
     });
   }
-
-  trackById = (_: number, s: AvailabilitySlot) => s.id;
 }

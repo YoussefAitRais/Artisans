@@ -1,10 +1,15 @@
-<div class="flex items-center justify-between mb-3">
-  <div class="font-semibold">Portfolio</div>
-  <label class="px-3 py-2 rounded-lg bg-sky-600 hover:bg-sky-700 text-white cursor-pointer">
-    Ajouter des photos
-    <input type="file" (change)="upload($event)" class="hidden" />
-  </label>
-</div>
-<div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-  <img *ngFor="let p of items" [src]="p.url" class="w-full h-48 object-cover rounded-xl border border-slate-800 bg-slate-800/40" />
+<div class="p-4">
+  <h2 class="text-xl font-bold mb-4">Portfolio</h2>
+
+  <input type="file" (change)="upload($event)" class="mb-4" />
+
+  <div class="grid md:grid-cols-3 gap-3">
+    <div *ngFor="let it of items" class="rounded overflow-hidden border border-slate-700">
+      <img [src]="it.imageUrl" class="w-full h-40 object-cover" />
+      <div class="p-2">
+        <div class="font-medium">{{ it.title }}</div>
+        <div class="text-slate-400 text-sm" *ngIf="it.description">{{ it.description }}</div>
+      </div>
+    </div>
+  </div>
 </div>
