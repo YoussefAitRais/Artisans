@@ -17,8 +17,7 @@ import {
   standalone: true,
   selector: 'app-client-home',
   imports: [CommonModule, FormsModule],
-  templateUrl: './client-home.component.html',
-  styleUrls: ['./client-home.component.css']
+  templateUrl: './client-home.component.html'
 })
 export class ClientHomeComponent implements OnInit {
   private api = inject(ArtisanApiService);

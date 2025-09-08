@@ -1,7 +1,7 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { Router } from '@angular/router';
+import {Router, RouterLink} from '@angular/router';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { AuthService, RegisterRequest, Role } from '../services/auth/auth.service';
 
@@ -18,7 +18,7 @@ function passwordMatchValidator(form: FormGroup) {
 @Component({
   selector: 'app-register',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink],
   templateUrl: './register.component.html'
 })
 export class RegisterComponent {
@@ -66,7 +66,7 @@ export class RegisterComponent {
     this.registerForm.get('role')?.valueChanges.subscribe(role => {
       const categoryControl = this.registerForm.get('categoryId');
       const metierControl = this.registerForm.get('metier');
-      
+
       if (role === 'ARTISAN') {
         categoryControl?.setValidators([Validators.required]);
         metierControl?.setValidators([Validators.required, Validators.maxLength(120)]);
@@ -136,7 +136,7 @@ export class RegisterComponent {
     const payload: RegisterRequest = {
       // Map frontend field names to backend expected names
       nom: formValue.firstName.trim(),      // Backend expects 'nom'
-      prenom: formValue.lastName.trim(),    // Backend expects 'prenom' 
+      prenom: formValue.lastName.trim(),    // Backend expects 'prenom'
       email: formValue.email.trim(),
       password: formValue.password,
       role: formValue.role,

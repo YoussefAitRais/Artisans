@@ -167,7 +167,7 @@ export class ArtisanApiService {
     Object.entries(params).forEach(([k, v]) => {
       if (v !== undefined && v !== null && String(v) !== '') httpParams = httpParams.set(k, String(v));
     });
-    return this.http.get<Page<ArtisanDto>>(`${this.base}/artisans/search`, { params: httpParams });
+    return this.http.get<Page<ArtisanDto>>(`${this.base}/artisans`, { params: httpParams });
   }
 
   createRequest(body: ClientRequestCreate): Observable<{ id: number }> {

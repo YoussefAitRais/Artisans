@@ -1,17 +1,28 @@
 <app-navbar></app-navbar>
-<div class="max-w-3xl mx-auto p-6">
-  <h2 class="text-xl font-semibold mb-4">Categories</h2>
+<div class="max-w-5xl mx-auto p-6">
+  <h2 class="text-2xl font-bold mb-6 text-center">Categories</h2>
 
   <div *ngIf="error" class="mb-3 p-2 rounded bg-rose-100 text-rose-700">{{ error }}</div>
   <div *ngIf="success" class="mb-3 p-2 rounded bg-emerald-100 text-emerald-700">{{ success }}</div>
-
   <div *ngIf="loading" class="text-slate-500">Loading…</div>
 
-  <div class="grid gap-3" *ngIf="!loading">
-    <div *ngFor="let c of items" class="rounded border p-3">
-      <div class="font-medium">{{ c.name }}</div>
-      <div class="text-slate-500 text-sm">{{ c.description || '—' }}</div>
+  <!-- Cards grid -->
+  <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6" *ngIf="!loading">
+    <div *ngFor="let c of items"
+         class="rounded-lg border shadow-sm bg-white overflow-hidden hover:shadow-md transition">
+
+      <img src="https://via.placeholder.com/400x200?text={{c.name}}"
+           alt="{{ c.name }}"
+           class="w-full h-40 object-cover">
+
+      <div class="p-4">
+        <div class="text-lg font-semibold mb-2">{{ c.name }}</div>
+        <div class="text-slate-600 text-sm">{{ c.description || '—' }}</div>
+      </div>
     </div>
-    <div *ngIf="items.length === 0" class="text-slate-400">No categories.</div>
+
+    <div *ngIf="items.length === 0" class="text-slate-400 col-span-full text-center">
+      No categories.
+    </div>
   </div>
 </div>
