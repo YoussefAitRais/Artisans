@@ -23,7 +23,6 @@ export class CategoryApiService {
   private base = `${API_BASE}/api/categories`;
   constructor(private http: HttpClient) {}
 
-  // كلهم اختيارية باش ما يطيحش TS2554
   getAll(page?: number, size?: number, sort?: string): Observable<Page<Category>> {
     let params = new HttpParams();
     if (page != null) params = params.set('page', page);

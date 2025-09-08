@@ -1,6 +1,50 @@
 <div class="space-y-6">
-  <!-- Search bar -->
+  <!-- Contacted Artisans Section -->
+  <div class="rounded-xl border border-slate-800 bg-slate-900/60 p-6">
+    <div class="flex items-center justify-between mb-4">
+      <h2 class="text-xl font-semibold text-white">Artisans You've Contacted</h2>
+      <button 
+        (click)="showContactedArtisans = !showContactedArtisans"
+        class="text-sm text-slate-400 hover:text-white transition-colors">
+        {{ showContactedArtisans ? 'Hide' : 'Show' }}
+      </button>
+    </div>
+    
+    <div *ngIf="showContactedArtisans">
+      <div *ngIf="contactedLoading" class="text-slate-300 text-center py-4">
+        Loading your contacted artisans...
+      </div>
+      
+      <div *ngIf="!contactedLoading && contactedArtisans.length === 0" class="text-slate-400 text-center py-8">
+        <div class="text-4xl mb-2">🔍</div>
+        <p>You haven't contacted any artisans yet.</p>
+        <p class="text-sm">Start by searching for artisans below and sending them requests!</p>
+      </div>
+      
+      <div *ngIf="!contactedLoading && contactedArtisans.length > 0" class="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+        <div *ngFor="let artisan of contactedArtisans; trackBy: trackArtisanById" 
+             class="rounded-lg border border-slate-700 bg-slate-800/60 p-4 hover:bg-slate-800/80 transition-colors">
+          <div class="space-y-2">
+            <div class="font-semibold text-white">
+              {{ artisan.nom }} {{ artisan.prenom }}
+            </div>
+            <div class="text-sm text-slate-300">
+              {{ artisan.metier }}
+            </div>
+            <div *ngIf="artisan.localisation" class="text-xs text-slate-400">
+              📍 {{ artisan.localisation }}
+            </div>
+            <div *ngIf="artisan.description" class="text-xs text-slate-500 line-clamp-2">
+              {{ artisan.description }}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- Search Section -->
   <div class="rounded-xl border border-slate-800 bg-slate-900/60 p-4">
+    <h3 class="text-lg font-semibold text-white mb-3">Find More Artisans</h3>
     <div class="grid md:grid-cols-4 gap-3">
       <input [(ngModel)]="keyword" placeholder="Métier, mot-clé…"
              class="bg-slate-800 rounded-lg px-3 py-2 outline-none border border-slate-700" />
@@ -12,7 +56,7 @@
     </div>
   </div>
 
-  <!-- Results -->
+  <!-- Search Results -->
   <div *ngIf="loading" class="text-slate-300">Chargement…</div>
   <div *ngIf="!loading && cards.length === 0" class="text-slate-400">
     Aucun artisan trouvé.

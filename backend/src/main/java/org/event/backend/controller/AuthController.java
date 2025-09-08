@@ -54,4 +54,22 @@ public class AuthController {
 
         return ResponseEntity.ok().headers(headers).body(response);
     }
+    
+    /**
+     * Health check endpoint for connection testing
+     * 
+     * This endpoint helps diagnose connection issues between frontend and backend.
+     * It's a simple GET endpoint that returns server status.
+     */
+    @GetMapping("/test")
+    public ResponseEntity<java.util.Map<String, Object>> healthCheck() {
+        java.util.Map<String, Object> response = new java.util.HashMap<>();
+        response.put("status", "OK");
+        response.put("message", "Backend server is running");
+        response.put("timestamp", java.time.Instant.now().toString());
+        response.put("server", "Spring Boot");
+        response.put("version", "1.0.0");
+        
+        return ResponseEntity.ok(response);
+    }
 }

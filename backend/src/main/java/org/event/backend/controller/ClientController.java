@@ -1,6 +1,7 @@
 package org.event.backend.controller;
 
 import jakarta.validation.Valid;
+import org.event.backend.dto.artisan.ArtisanResponse;
 import org.event.backend.dto.client.ClientResponse;
 import org.event.backend.dto.client.ClientUpdateRequest;
 import org.event.backend.entity.Utilisateur;
@@ -34,6 +35,15 @@ public class ClientController {
     public ResponseEntity<ClientResponse> updateMe(@AuthenticationPrincipal Utilisateur current,
                                                    @Valid @RequestBody ClientUpdateRequest req) {
         return ResponseEntity.ok(clientService.updateMe(current, req));
+    }
+
+    // Get artisans that this client has sent service requests to
+    @GetMapping("/api/client/me/contacted-artisans")
+    public ResponseEntity<Page<ArtisanResponse>> getContactedArtisans(
+            @AuthenticationPrincipal Utilisateur current,
+            Pageable pageable
+    ) {
+        return ResponseEntity.ok(clientService.getContactedArtisans(current, pageable));
     }
 
     // ---------- Admin (ROLE_ADMIN) ----------

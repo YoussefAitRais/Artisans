@@ -1,6 +1,6 @@
 package org.event.backend.service.messaging;
 
-import org.event.backend.dto.messaging.ConversationResponse;
+import org.event.backend.dto.messaging.ConversationResponse;   // <-- التصحيح هنا
 import org.event.backend.dto.messaging.MessageCreateRequest;
 import org.event.backend.dto.messaging.MessageResponse;
 import org.event.backend.entity.*;
@@ -11,11 +11,41 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
-/** Business logic for conversations & messages. */
+/**
+ * MessagingService - Clean Code Example for Beginners
+ *
+ * This service handles all messaging operations between clients and artisans.
+ * It demonstrates clean code principles:
+ * - Single Responsibility: Only handles messaging logic
+ * - Clear naming: Method names describe what they do
+ * - Small methods: Each method does one thing well
+ * - Constants: No magic numbers or strings
+ * - Proper validation: Input checking before processing
+ *
+ * Key Operations:
+ * - Get conversations for a user
+ * - Create/find conversations for engagements
+ * - Send and list messages
+ */
 @Service
 public class MessagingService {
 
+    // === CONSTANTS: No magic numbers or strings ===
+    private static final Long INVALID_ID = -1L;
+    private static final int MAX_MESSAGE_LENGTH = 1000;
+    private static final String CONVERSATION_NOT_FOUND = "Conversation not found";
+    private static final String ENGAGEMENT_NOT_FOUND = "Engagement not found";
+    private static final String ACCESS_DENIED = "Not allowed to access this conversation";
+    private static final String USER_NULL_ERROR = "User cannot be null";
+    private static final String INVALID_USER_TYPE = "Only CLIENT or ARTISAN can access messaging";
+    private static final String MESSAGE_REQUEST_NULL = "Message request cannot be null";
+    private static final String MESSAGE_BODY_EMPTY = "Message body cannot be empty";
+    private static final String MESSAGE_TOO_LONG = "Message body cannot exceed " + MAX_MESSAGE_LENGTH + " characters";
+    private static final String ID_INVALID = " must be a positive number";
+
+    // === DEPENDENCIES: Injected repositories ===
     private final ConversationRepository conversationRepository;
     private final EngagementRepository engagementRepository;
     private final MessageRepository messageRepository;
@@ -28,122 +58,210 @@ public class MessagingService {
         this.messageRepository = messageRepository;
     }
 
-    // ---------- Conversations ----------
+    // ========================================
+    // CONVERSATION OPERATIONS
+    // ========================================
 
+    /** Gets all conversations for a user (client or artisan) */
     @Transactional(readOnly = true)
     public Page<ConversationResponse> myConversations(Utilisateur current, Pageable pageable) {
-        if (current instanceof Client c) {
-            return conversationRepository.findByClient_IdOrArtisan_Id(c.getId(), -1L, pageable)
-                    .map(this::toConversationDto);
-        } else if (current instanceof Artisan a) {
-            return conversationRepository.findByClient_IdOrArtisan_Id(-1L, a.getId(), pageable)
-                    .map(this::toConversationDto);
+        validateUser(current);
+
+        if (current instanceof Client client) {
+            return findConversationsForClient(client.getId(), pageable);
         }
-        throw new IllegalStateException("Only CLIENT or ARTISAN can list conversations");
+        if (current instanceof Artisan artisan) {
+            return findConversationsForArtisan(artisan.getId(), pageable);
+        }
+        throw new IllegalStateException(INVALID_USER_TYPE);
     }
 
-    /** Get or create a conversation for an engagement, ensuring the caller is a participant. */
+    /** Finds all conversations where user is the client */
+    private Page<ConversationResponse> findConversationsForClient(Long clientId, Pageable pageable) {
+        return conversationRepository
+                .findByClient_IdOrArtisan_Id(clientId, INVALID_ID, pageable)
+                .map(this::mapToConversationResponse);
+    }
+
+    /** Finds all conversations where user is the artisan */
+    private Page<ConversationResponse> findConversationsForArtisan(Long artisanId, Pageable pageable) {
+        return conversationRepository
+                .findByClient_IdOrArtisan_Id(INVALID_ID, artisanId, pageable)
+                .map(this::mapToConversationResponse);
+    }
+
+    /** Gets existing conversation or creates new one for an engagement (idempotent) */
     @Transactional
     public ConversationResponse getOrCreateByEngagement(Utilisateur current, Long engagementId) {
-        Engagement e = engagementRepository.findById(engagementId)
-                .orElseThrow(() -> new IllegalArgumentException("Engagement not found"));
+        validateUser(current);
+        validateId(engagementId, "Engagement ID");
 
-        // Ownership check
-        if (!isParticipant(current, e)) {
-            throw new IllegalStateException("Not allowed to access this engagement conversation");
-        }
+        Engagement engagement = findEngagementById(engagementId);
+        validateUserCanAccessEngagement(current, engagement);
 
-        Conversation conv = conversationRepository.findByEngagement_Id(engagementId)
-                .orElseGet(() -> {
-                    Conversation c = new Conversation();
-                    c.setEngagement(e);
-                    c.setClient(e.getClient());
-                    c.setArtisan(e.getArtisan());
-                    return conversationRepository.save(c);
-                });
-
-        return toConversationDto(conv);
+        Conversation conversation = findOrCreateConversation(engagement);
+        return mapToConversationResponse(conversation);
     }
 
+    private Engagement findEngagementById(Long engagementId) {
+        return engagementRepository.findById(engagementId)
+                .orElseThrow(() -> new IllegalArgumentException(ENGAGEMENT_NOT_FOUND));
+    }
+
+    private Conversation findOrCreateConversation(Engagement engagement) {
+        return conversationRepository.findByEngagement_Id(engagement.getId())
+                .orElseGet(() -> createNewConversationForEngagement(engagement));
+    }
+
+    private Conversation createNewConversationForEngagement(Engagement engagement) {
+        Conversation c = new Conversation();
+        c.setEngagement(engagement);
+        c.setClient(engagement.getClient());
+        c.setArtisan(engagement.getArtisan());
+        return conversationRepository.save(c);
+    }
+
+    /** Gets a specific conversation the user has access to */
     @Transactional(readOnly = true)
     public ConversationResponse getConversation(Utilisateur current, Long conversationId) {
-        Conversation conv = fetchOwnedConversation(current, conversationId);
-        return toConversationDto(conv);
+        validateUser(current);
+        validateId(conversationId, "Conversation ID");
+
+        Conversation conversation = fetchUserOwnedConversation(current, conversationId);
+        return mapToConversationResponse(conversation);
     }
 
-    // ---------- Messages ----------
+    // ========================================
+    // MESSAGE OPERATIONS
+    // ========================================
 
+    /** Lists messages in a conversation (chronological order) */
     @Transactional(readOnly = true)
     public Page<MessageResponse> listMessages(Utilisateur current, Long conversationId, Pageable pageable) {
-        fetchOwnedConversation(current, conversationId); // authorization
-        return messageRepository.findByConversation_IdOrderByCreatedAtAsc(conversationId, pageable)
-                .map(this::toMessageDto);
+        validateUser(current);
+        validateId(conversationId, "Conversation ID");
+
+        // Ensure access
+        fetchUserOwnedConversation(current, conversationId);
+
+        return messageRepository
+                .findByConversation_IdOrderByCreatedAtAsc(conversationId, pageable)
+                .map(this::mapToMessageResponse);
     }
 
+    /** Sends a message in a conversation */
     @Transactional
-    public MessageResponse sendMessage(Utilisateur current, Long conversationId, MessageCreateRequest req) {
-        Conversation conv = fetchOwnedConversation(current, conversationId);
+    public MessageResponse sendMessage(Utilisateur current, Long conversationId, MessageCreateRequest request) {
+        validateUser(current);
+        validateId(conversationId, "Conversation ID");
+        validateMessageRequest(request);
 
-        MessageSenderRole role = resolveSenderRole(current, conv);
+        Conversation conversation = fetchUserOwnedConversation(current, conversationId);
+        MessageSenderRole senderRole = determineSenderRole(current, conversation);
 
+        Message newMessage = buildMessage(conversation, senderRole, request.getBody());
+        Message saved = messageRepository.save(newMessage);
+        return mapToMessageResponse(saved);
+    }
+
+    private Message buildMessage(Conversation conversation, MessageSenderRole senderRole, String messageBody) {
         Message m = new Message();
-        m.setConversation(conv);
-        m.setSenderRole(role);
-        m.setBody(req.getBody());
-
-        return toMessageDto(messageRepository.save(m));
+        m.setConversation(conversation);
+        m.setSenderRole(senderRole);
+        m.setBody(messageBody.trim());
+        return m;
     }
 
-    // ---------- Helpers ----------
+    // ========================================
+    // VALIDATION
+    // ========================================
 
-    private Conversation fetchOwnedConversation(Utilisateur current, Long id) {
-        if (current instanceof Client c) {
-            return conversationRepository.findByIdAndClient_Id(id, c.getId())
-                    .orElseThrow(() -> new IllegalArgumentException("Conversation not found"));
-        } else if (current instanceof Artisan a) {
-            return conversationRepository.findByIdAndArtisan_Id(id, a.getId())
-                    .orElseThrow(() -> new IllegalArgumentException("Conversation not found"));
+    private void validateUser(Utilisateur user) {
+        if (user == null) throw new IllegalArgumentException(USER_NULL_ERROR);
+        boolean ok = (user instanceof Client) || (user instanceof Artisan);
+        if (!ok) throw new IllegalStateException(INVALID_USER_TYPE);
+    }
+
+    private void validateId(Long id, String fieldName) {
+        if (id == null || id <= 0) throw new IllegalArgumentException(fieldName + ID_INVALID);
+    }
+
+    private void validateMessageRequest(MessageCreateRequest request) {
+        if (request == null) throw new IllegalArgumentException(MESSAGE_REQUEST_NULL);
+        if (!StringUtils.hasText(request.getBody())) throw new IllegalArgumentException(MESSAGE_BODY_EMPTY);
+        if (request.getBody().trim().length() > MAX_MESSAGE_LENGTH) throw new IllegalArgumentException(MESSAGE_TOO_LONG);
+    }
+
+    private void validateUserCanAccessEngagement(Utilisateur user, Engagement engagement) {
+        if (!isUserPartOfEngagement(user, engagement)) throw new IllegalStateException(ACCESS_DENIED);
+    }
+
+    // ========================================
+    // BUSINESS HELPERS
+    // ========================================
+
+    private Conversation fetchUserOwnedConversation(Utilisateur current, Long conversationId) {
+        if (current instanceof Client client) {
+            return findConversationForSpecificClient(conversationId, client.getId());
         }
-        throw new IllegalStateException("Only CLIENT or ARTISAN can access conversations");
+        if (current instanceof Artisan artisan) {
+            return findConversationForSpecificArtisan(conversationId, artisan.getId());
+        }
+        throw new IllegalStateException(INVALID_USER_TYPE);
     }
 
-    private boolean isParticipant(Utilisateur current, Engagement e) {
-        if (current instanceof Client c) {
-            return e.getClient().getId().equals(c.getId());
-        } else if (current instanceof Artisan a) {
-            return e.getArtisan().getId().equals(a.getId());
+    private Conversation findConversationForSpecificClient(Long conversationId, Long clientId) {
+        return conversationRepository.findByIdAndClient_Id(conversationId, clientId)
+                .orElseThrow(() -> new IllegalArgumentException(CONVERSATION_NOT_FOUND));
+    }
+
+    private Conversation findConversationForSpecificArtisan(Long conversationId, Long artisanId) {
+        return conversationRepository.findByIdAndArtisan_Id(conversationId, artisanId)
+                .orElseThrow(() -> new IllegalArgumentException(CONVERSATION_NOT_FOUND));
+    }
+
+    private boolean isUserPartOfEngagement(Utilisateur user, Engagement engagement) {
+        if (user instanceof Client client) {
+            return engagement.getClient().getId().equals(client.getId());
+        }
+        if (user instanceof Artisan artisan) {
+            return engagement.getArtisan().getId().equals(artisan.getId());
         }
         return false;
     }
 
-    private MessageSenderRole resolveSenderRole(Utilisateur current, Conversation conv) {
-        if (current instanceof Client c && conv.getClient().getId().equals(c.getId())) {
+    private MessageSenderRole determineSenderRole(Utilisateur user, Conversation conversation) {
+        if (user instanceof Client client && conversation.getClient().getId().equals(client.getId())) {
             return MessageSenderRole.CLIENT;
         }
-        if (current instanceof Artisan a && conv.getArtisan().getId().equals(a.getId())) {
+        if (user instanceof Artisan artisan && conversation.getArtisan().getId().equals(artisan.getId())) {
             return MessageSenderRole.ARTISAN;
         }
         throw new IllegalStateException("User is not a participant of this conversation");
     }
 
-    private ConversationResponse toConversationDto(Conversation c) {
+    // ========================================
+    // MAPPERS
+    // ========================================
+
+    private ConversationResponse mapToConversationResponse(Conversation conversation) {
         return new ConversationResponse(
-                c.getId(),
-                c.getEngagement().getId(),
-                c.getClient().getId(),
-                c.getArtisan().getId(),
-                c.getCreatedAt(),
-                c.getUpdatedAt()
+                conversation.getId(),
+                conversation.getEngagement().getId(),
+                conversation.getClient().getId(),
+                conversation.getArtisan().getId(),
+                conversation.getCreatedAt(),
+                conversation.getUpdatedAt()
         );
     }
 
-    private MessageResponse toMessageDto(Message m) {
+    private MessageResponse mapToMessageResponse(Message message) {
         return new MessageResponse(
-                m.getId(),
-                m.getConversation().getId(),
-                m.getSenderRole(),
-                m.getBody(),
-                m.getCreatedAt()
+                message.getId(),
+                message.getConversation().getId(),
+                message.getSenderRole(),
+                message.getBody(),
+                message.getCreatedAt()
         );
     }
 }

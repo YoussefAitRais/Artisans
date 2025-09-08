@@ -14,6 +14,9 @@ public interface QuoteRepository extends JpaRepository<Quote, Long> {
     Page<Quote> findByArtisan_Id(Long artisanId, Pageable pageable);
 
     List<Quote> findByRequest_Id(Long requestId);
+    
+    // Add pageable version for admin queries
+    Page<Quote> findByRequest_Id(Long requestId, Pageable pageable);
 
-    Optional<Quote> findByIdAndArtisan_Id(Long id, Long artisanId); // <-- ضروري
+    Optional<Quote> findByIdAndArtisan_Id(Long id, Long artisanId);
 }

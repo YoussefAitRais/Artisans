@@ -1,43 +1,72 @@
-<!-- Cards with small stats -->
-<div class="grid md:grid-cols-2 xl:grid-cols-3 gap-4">
-  <div *ngFor="let s of stats" class="rounded-xl border border-slate-800 bg-slate-900/60 p-5">
-    <div class="text-sm text-slate-300">{{ s.label }}</div>
-    <div class="mt-2 text-2xl font-bold">{{ s.value }}</div>
+<!-- 
+  Artisan Dashboard Home - Tailwind CSS Version
+  
+  This template demonstrates:
+  - Tailwind utility classes for responsive design
+  - Clean semantic HTML structure
+  - Accessibility features
+  - Consistent spacing and colors
+-->
+
+<div class="p-6 bg-slate-900 min-h-screen text-white">
+  <!-- Statistics Cards Section -->
+  <div class="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 mb-6">
+    <div *ngFor="let stat of stats" 
+         class="bg-slate-800 border border-slate-700 rounded-xl p-5 transition-all duration-200 hover:bg-slate-700 hover:-translate-y-0.5">
+      <div class="text-sm text-slate-400 mb-2 font-medium">{{ stat.label }}</div>
+      <div class="text-3xl font-bold text-white leading-tight">{{ stat.value }}</div>
+    </div>
   </div>
-</div>
 
-<div class="mt-6 grid lg:grid-cols-2 gap-4">
-  <!-- Recent reviews -->
-  <div class="rounded-xl border border-slate-800 bg-slate-900/60 p-5">
-    <div class="font-semibold mb-3">Avis récents</div>
+  <!-- Main Content Grid -->
+  <div class="grid gap-4 grid-cols-1 lg:grid-cols-2">
+    <!-- Recent Reviews Section -->
+    <div class="bg-slate-800 border border-slate-700 rounded-xl p-5 text-white">
+      <div class="text-lg font-semibold text-white mb-4">Avis récents</div>
 
-    <div class="space-y-3 text-sm" *ngIf="recentReviews.length; else emptyRv">
-      <div *ngFor="let r of recentReviews" class="p-3 rounded-lg bg-slate-800/60">
-        <div class="flex items-center justify-between">
-          <div class="font-medium">{{ r.author }}</div>
-          <!-- Use || 0 to avoid NG8102 warning -->
-          <div class="text-amber-300">{{ '⭐'.repeat(r.rating || 0) }}</div>
+      <!-- Reviews List (shows when we have reviews) -->
+      <div *ngIf="recentReviews.length > 0; else emptyReviews">
+        <div *ngFor="let review of recentReviews" 
+             class="bg-slate-700 rounded-lg p-3 mb-3 last:mb-0 text-white">
+          <div class="flex justify-between items-center mb-2">
+            <div class="font-medium text-white text-sm">{{ review.author }}</div>
+            <div class="text-amber-400 text-sm">
+              {{ getStarRating(review.rating || 0) }}
+            </div>
+          </div>
+          <div class="text-slate-300 text-sm leading-relaxed">{{ review.text }}</div>
         </div>
-        <div class="text-slate-300 mt-2">{{ r.text }}</div>
       </div>
+
+      <!-- Empty State (shows when no reviews) -->
+      <ng-template #emptyReviews>
+        <div class="text-slate-400 text-sm text-center p-4 italic">
+          Aucun avis pour le moment.
+        </div>
+      </ng-template>
     </div>
 
-    <ng-template #emptyRv>
-      <div class="text-slate-400 text-sm">Aucun avis pour le moment.</div>
-    </ng-template>
-  </div>
-
-  <!-- Quick actions -->
-  <div class="rounded-xl border border-slate-800 bg-slate-900/60 p-5">
-    <div class="font-semibold mb-3">Actions rapides</div>
-    <div class="grid sm:grid-cols-2 gap-3">
-      <!-- routerLink requires RouterModule in the standalone component -->
-      <a routerLink="/artisan/requests" class="px-3 py-2 rounded-lg bg-sky-600 hover:bg-sky-700 text-center">
-        Voir demandes
-      </a>
-      <a routerLink="/artisan/quotes" class="px-3 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-center">
-        Mes devis
-      </a>
+    <!-- Quick Actions Section -->
+    <div class="bg-slate-800 border border-slate-700 rounded-xl p-5 text-white">
+      <div class="text-lg font-semibold text-white mb-4">Actions rapides</div>
+      
+      <div class="grid gap-3 grid-cols-1 sm:grid-cols-2">
+        <a 
+          routerLink="/artisan/requests" 
+          class="block p-3 text-center text-white no-underline rounded-lg font-medium text-sm transition-all duration-200 bg-sky-600 hover:bg-sky-700 hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-offset-2 focus:ring-offset-slate-800"
+          aria-label="Voir toutes les demandes reçues"
+        >
+          Voir demandes
+        </a>
+        
+        <a 
+          routerLink="/artisan/quotes" 
+          class="block p-3 text-center text-white no-underline rounded-lg font-medium text-sm transition-all duration-200 bg-emerald-600 hover:bg-emerald-700 hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-offset-2 focus:ring-offset-slate-800"
+          aria-label="Gérer mes devis envoyés"
+        >
+          Mes devis
+        </a>
+      </div>
     </div>
   </div>
 </div>

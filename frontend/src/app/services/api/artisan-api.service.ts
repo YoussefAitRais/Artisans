@@ -11,7 +11,6 @@ export interface Page<T> {
   size: number;
 }
 
-/** ====== Types مستعملة عبر الصفحات ====== */
 export type InboxStatus = 'ALL' | 'PENDING' | 'RESPONDED';
 
 export interface ArtisanInboxItem {
@@ -120,7 +119,6 @@ export class ArtisanApiService {
     return this.http.get<Page<Quote>>(`${this.base}/artisan/quotes`, { params });
   }
 
-  /** alias حفاظاً على توافق الشيفرات السابقة */
   listQuotes(page = 0, size = 20): Observable<Page<Quote>> { return this.myQuotes(page, size); }
 
   /** Create quote — POST /api/requests/{requestId}/quotes */
@@ -129,7 +127,6 @@ export class ArtisanApiService {
     return this.http.post<Quote>(`${this.base}/requests/${requestId}/quotes`, payload);
   }
 
-  /** Availability (optional endpoints إن كانت موجودة عندك) */
   listAvailability(): Observable<AvailabilitySlot[]> {
     return this.http.get<AvailabilitySlot[]>(`${this.base}/artisan/availability`);
   }
@@ -160,9 +157,7 @@ export class ArtisanApiService {
   getMyProfile(): Observable<ArtisanProfile> { return this.http.get<ArtisanProfile>(`${this.base}/artisan/profile`); }
   updateMyProfile(body: ArtisanProfile): Observable<ArtisanProfile> { return this.http.put<ArtisanProfile>(`${this.base}/artisan/profile`, body); }
 
-  /** Public helpers للواجهة ديال Client Home */
   listCategories(): Observable<Category[]> {
-    // الـ backend كيرجع Page<CategoryResponse> فـ /api/categories
     const params = new HttpParams().set('page', 0).set('size', 1000);
     return this.http.get<Page<Category>>(`${this.base}/categories`, { params }).pipe(map(p => p.content));
   }

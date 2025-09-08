@@ -58,6 +58,17 @@ export interface ServiceRequestCreateRequest {
 
 export interface ServiceRequestUpdateRequest extends ServiceRequestCreateRequest {}
 
+/* ===== Artisans ===== */
+export interface ArtisanResponse {
+  id: number;
+  nom: string;
+  prenom: string;
+  email: string;
+  metier: string;
+  localisation?: string;
+  description?: string;
+}
+
 
 @Injectable({ providedIn: 'root' })
 export class ClientApi {
@@ -82,4 +93,10 @@ export class ClientApi {
 
   getMe() { return this.http.get<ClientResponse>(`${API_BASE}/api/client/me`); }
   updateMe(req: ClientUpdateRequest) { return this.http.put<ClientResponse>(`${API_BASE}/api/client/me`, req); }
+  
+  // Get artisans that this client has contacted (sent requests to)
+  getContactedArtisans(page = 0, size = 10, sort = 'nom,asc') {
+    const params = new HttpParams().set('page', page).set('size', size).set('sort', sort);
+    return this.http.get<Page<ArtisanResponse>>(`${API_BASE}/api/client/me/contacted-artisans`, { params });
+  }
 }

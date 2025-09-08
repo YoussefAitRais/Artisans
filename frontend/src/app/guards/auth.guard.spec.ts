@@ -2,9 +2,9 @@
 import { TestBed } from '@angular/core/testing';
 import { ActivatedRouteSnapshot, Router, RouterStateSnapshot, UrlTree } from '@angular/router';
 import { RouterTestingModule } from '@angular/router/testing';
-import { authGuard } from './auth.guard';
+import { authCanMatch } from './auth.guard';
 
-describe('authGuard (CanActivate)', () => {
+describe('authCanMatch (CanMatch)', () => {
   let router: Router;
 
   beforeEach(() => {
@@ -12,33 +12,33 @@ describe('authGuard (CanActivate)', () => {
       imports: [RouterTestingModule.withRoutes([])],
     });
     router = TestBed.inject(Router);
-    localStorage.removeItem('access_token');
+    localStorage.removeItem('token'); // Use 'token' to match the guard
   });
 
-  const call = (url: string) => {
-    const route = {} as ActivatedRouteSnapshot;
-    const state = { url } as RouterStateSnapshot;
-    // @ts-ignore
-    return TestBed.runInInjectionContext(() => authGuard(route, state));
+  const call = () => {
+    const route = {} as any;
+    const state = {} as any;
+    return TestBed.runInInjectionContext(() => authCanMatch(route, state));
   };
 
-  it('allows /login without token', () => {
-    const res = call('/login');
+  it('allows access when token exists', () => {
+    localStorage.setItem('token', 'valid-token');
+    const res = call();
     expect(res).toBeTrue();
+    localStorage.removeItem('token');
   });
 
-  it('redirects protected pages to /login without token', () => {
-    const res = call('/artisan');
+  it('redirects to login when no token', () => {
+    const res = call();
     expect(res instanceof UrlTree).toBeTrue();
     expect(router.serializeUrl(res as UrlTree)).toBe('/login');
   });
 
-  it('redirects token user away from /login', () => {
-    localStorage.setItem('access_token', 't');
-    const res = call('/login');
+  it('redirects to login when token exists but is empty', () => {
+    localStorage.setItem('token', '');
+    const res = call();
     expect(res instanceof UrlTree).toBeTrue();
-    // adjust to your actual post-login route if different
-    // expect(router.serializeUrl(res as UrlTree)).toBe('/client/home');
-    localStorage.removeItem('access_token');
+    expect(router.serializeUrl(res as UrlTree)).toBe('/login');
+    localStorage.removeItem('token');
   });
 });

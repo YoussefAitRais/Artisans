@@ -1,13 +1,14 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpClient, HttpParams } from '@angular/common/http';
+import {NavbarComponent} from "../../../navbar/navbar.component";
 
 type Category = { id: number; name: string; description?: string };
 
 @Component({
   standalone: true,
   selector: 'app-categories',
-  imports: [CommonModule],
+  imports: [CommonModule, NavbarComponent],
   templateUrl: './categories.component.html'
 })
 export class CategoriesComponent implements OnInit {

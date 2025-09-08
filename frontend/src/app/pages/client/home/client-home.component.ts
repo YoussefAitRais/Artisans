@@ -7,15 +7,22 @@ import {
   Page,
   Category,
 } from '../../../services/api/artisan-api.service';
+import {
+  ClientApi,
+  ArtisanResponse,
+  Page as ClientPage
+} from '../../../services/api/client-api.service';
 
 @Component({
   standalone: true,
   selector: 'app-client-home',
   imports: [CommonModule, FormsModule],
   templateUrl: './client-home.component.html',
+  styleUrls: ['./client-home.component.css']
 })
 export class ClientHomeComponent implements OnInit {
   private api = inject(ArtisanApiService);
+  private clientApi = inject(ClientApi);
 
   // Filters
   metier = '';
@@ -23,9 +30,14 @@ export class ClientHomeComponent implements OnInit {
   keyword = '';
   categoryId: number | null = null;
 
-  // View state
+  // View state for search results
   loading = false;
   cards: Array<{ id: number; name: string; city: string; image: string; rating: number; metier: string }> = [];
+
+  // View state for contacted artisans
+  contactedLoading = false;
+  contactedArtisans: ArtisanResponse[] = [];
+  showContactedArtisans = true;
 
   // Modal state for creating a request
   showModal = false;
@@ -43,7 +55,23 @@ export class ClientHomeComponent implements OnInit {
 
   ngOnInit(): void {
     this.search();
+    this.loadContactedArtisans();
     this.api.listCategories().subscribe((x) => (this.categories = x));
+  }
+
+  private loadContactedArtisans(): void {
+    this.contactedLoading = true;
+    this.clientApi.getContactedArtisans(0, 10).subscribe({
+      next: (page: ClientPage<ArtisanResponse>) => {
+        this.contactedArtisans = page.content;
+      },
+      error: (err) => {
+        console.error('Error loading contacted artisans:', err);
+      },
+      complete: () => {
+        this.contactedLoading = false;
+      }
+    });
   }
 
   onSearch(): void {
@@ -77,6 +105,10 @@ export class ClientHomeComponent implements OnInit {
 
   trackById(_: number, c: { id: number }): number {
     return c.id;
+  }
+
+  trackArtisanById(_: number, artisan: ArtisanResponse): number {
+    return artisan.id;
   }
 
   openRequestModal(card: { id: number; name: string }): void {

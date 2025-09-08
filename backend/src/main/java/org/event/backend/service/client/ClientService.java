@@ -1,14 +1,23 @@
 package org.event.backend.service.client;
 
+import org.event.backend.dto.artisan.ArtisanResponse;
 import org.event.backend.dto.client.ClientResponse;
 import org.event.backend.dto.client.ClientUpdateRequest;
+import org.event.backend.entity.Artisan;
 import org.event.backend.entity.Client;
 import org.event.backend.entity.Utilisateur;
+import org.event.backend.repository.ArtisanRepository;
 import org.event.backend.repository.ClientRepository;
+import org.event.backend.repository.QuoteRepository;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.TypedQuery;
+import java.util.List;
 
 /**
  * Business logic for client profiles: self-get/update and admin ops.
@@ -17,9 +26,18 @@ import org.springframework.transaction.annotation.Transactional;
 public class ClientService {
 
     private final ClientRepository clientRepository;
+    private final ArtisanRepository artisanRepository;
+    private final QuoteRepository quoteRepository;
+    private final EntityManager entityManager;
 
-    public ClientService(ClientRepository clientRepository) {
+    public ClientService(ClientRepository clientRepository,
+                        ArtisanRepository artisanRepository,
+                        QuoteRepository quoteRepository,
+                        EntityManager entityManager) {
         this.clientRepository = clientRepository;
+        this.artisanRepository = artisanRepository;
+        this.quoteRepository = quoteRepository;
+        this.entityManager = entityManager;
     }
 
     // ---------- Self (ROLE_CLIENT) ----------
@@ -44,6 +62,43 @@ public class ClientService {
 
         clientRepository.save(c);
         return toResponse(c);
+    }
+
+    // Get artisans that this client has sent service requests to (who have received quotes)
+    @Transactional(readOnly = true)
+    public Page<ArtisanResponse> getContactedArtisans(Utilisateur current, Pageable pageable) {
+        Long clientId = current.getId();
+        
+        // Query to find distinct artisans who have sent quotes to this client's requests
+        String jpql = """
+            SELECT DISTINCT q.artisan FROM Quote q 
+            WHERE q.request.client.id = :clientId 
+            ORDER BY q.artisan.nom, q.artisan.prenom
+            """;
+        
+        TypedQuery<Artisan> query = entityManager.createQuery(jpql, Artisan.class)
+                .setParameter("clientId", clientId);
+        
+        // Get total count
+        String countJpql = """
+            SELECT COUNT(DISTINCT q.artisan) FROM Quote q 
+            WHERE q.request.client.id = :clientId
+            """;
+        Long totalCount = entityManager.createQuery(countJpql, Long.class)
+                .setParameter("clientId", clientId)
+                .getSingleResult();
+        
+        // Apply pagination
+        List<Artisan> artisans = query
+                .setFirstResult((int) pageable.getOffset())
+                .setMaxResults(pageable.getPageSize())
+                .getResultList();
+        
+        List<ArtisanResponse> artisanResponses = artisans.stream()
+                .map(this::toArtisanResponse)
+                .toList();
+        
+        return new PageImpl<>(artisanResponses, pageable, totalCount);
     }
 
     // ---------- Admin (ROLE_ADMIN) ----------
@@ -89,7 +144,7 @@ public class ClientService {
         clientRepository.deleteById(id);
     }
 
-    // ---------- Mapper ----------
+    // ---------- Mappers ----------
 
     private ClientResponse toResponse(Client c) {
         return new ClientResponse(
@@ -98,6 +153,18 @@ public class ClientService {
                 c.getPrenom(),
                 c.getEmail(),
                 c.getTelephone()
+        );
+    }
+
+    private ArtisanResponse toArtisanResponse(Artisan a) {
+        return new ArtisanResponse(
+                a.getId(),
+                a.getNom(),
+                a.getPrenom(),
+                a.getEmail(),
+                a.getMetier(),
+                a.getLocalisation(),
+                a.getDescription()
         );
     }
 }
