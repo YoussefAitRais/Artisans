@@ -1,60 +1,104 @@
-<!-- src/app/layout/client-dashboard/client-dashboard.component.html -->
-<div class="min-h-screen bg-gray-50 flex">
+<!-- Client Dashboard - Responsive Gradient Design -->
+<div class="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-pink-700 flex">
   <!-- Sidebar (desktop) -->
-  <aside class="hidden lg:flex lg:flex-col lg:w-64 bg-gray-900 text-white">
-    <div class="h-16 flex items-center px-6 border-b border-white/10">
-      <span class="font-bold text-lg">Espace Client</span>
+  <aside class="hidden lg:flex lg:flex-col lg:w-72 xl:w-80 bg-gradient-to-b from-gray-900 to-gray-800 text-white shadow-2xl">
+    <div class="h-16 xl:h-20 flex items-center px-6 border-b border-white/10 bg-gradient-to-r from-gray-800 to-pink-900">
+      <div class="flex items-center space-x-3">
+        <div class="w-8 h-8 xl:w-10 xl:h-10 bg-gradient-to-br from-pink-500 to-pink-600 rounded-lg flex items-center justify-center">
+          <span class="text-white font-bold text-sm xl:text-base">👤</span>
+        </div>
+        <span class="font-bold text-lg xl:text-xl text-white">Espace Client</span>
+      </div>
     </div>
 
     <nav class="flex-1 p-4 space-y-2">
-      <a routerLink="home" routerLinkActive="!bg-pink-600" [routerLinkActiveOptions]="{ exact: true }"
-         class="block w-full px-4 py-2 rounded-md hover:bg-white/10 transition">Accueil</a>
+      <a routerLink="home" routerLinkActive="!bg-gradient-to-r !from-pink-600 !to-pink-700 !text-white !shadow-lg" [routerLinkActiveOptions]="{ exact: true }"
+         class="flex items-center space-x-3 w-full px-4 py-3 xl:py-4 rounded-xl hover:bg-gradient-to-r hover:from-white/5 hover:to-white/10 transition-all duration-200 text-gray-300 hover:text-white group">
+        <span class="text-lg xl:text-xl">🏠</span>
+        <span class="font-medium">Accueil</span>
+      </a>
 
-      <a routerLink="requests" routerLinkActive="!bg-pink-600"
-         class="block w-full px-4 py-2 rounded-md hover:bg-white/10 transition">Mes demandes</a>
+      <a routerLink="requests" routerLinkActive="!bg-gradient-to-r !from-pink-600 !to-pink-700 !text-white !shadow-lg"
+         class="flex items-center space-x-3 w-full px-4 py-3 xl:py-4 rounded-xl hover:bg-gradient-to-r hover:from-white/5 hover:to-white/10 transition-all duration-200 text-gray-300 hover:text-white group">
+        <span class="text-lg xl:text-xl">📋</span>
+        <span class="font-medium">Mes demandes</span>
+      </a>
 
-      <a routerLink="favorites" routerLinkActive="!bg-pink-600"
-         class="block w-full px-4 py-2 rounded-md hover:bg-white/10 transition">Favoris</a>
+      <a routerLink="favorites" routerLinkActive="!bg-gradient-to-r !from-pink-600 !to-pink-700 !text-white !shadow-lg"
+         class="flex items-center space-x-3 w-full px-4 py-3 xl:py-4 rounded-xl hover:bg-gradient-to-r hover:from-white/5 hover:to-white/10 transition-all duration-200 text-gray-300 hover:text-white group">
+        <span class="text-lg xl:text-xl">⭐</span>
+        <span class="font-medium">Favoris</span>
+      </a>
 
-      <a routerLink="settings" routerLinkActive="!bg-pink-600"
-         class="block w-full px-4 py-2 rounded-md hover:bg-white/10 transition">Paramètres</a>
+      <a routerLink="settings" routerLinkActive="!bg-gradient-to-r !from-pink-600 !to-pink-700 !text-white !shadow-lg"
+         class="flex items-center space-x-3 w-full px-4 py-3 xl:py-4 rounded-xl hover:bg-gradient-to-r hover:from-white/5 hover:to-white/10 transition-all duration-200 text-gray-300 hover:text-white group">
+        <span class="text-lg xl:text-xl">⚙️</span>
+        <span class="font-medium">Paramètres</span>
+      </a>
     </nav>
 
     <div class="p-4 border-t border-white/10">
       <button (click)="logout()"
-              class="w-full bg-pink-600 hover:bg-pink-700 text-white font-semibold py-2 rounded-md transition">
-        Déconnexion
+              class="w-full bg-gradient-to-r from-pink-600 to-pink-700 hover:from-pink-700 hover:to-pink-800 text-white font-semibold py-3 xl:py-4 rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-[1.02]">
+        <span class="flex items-center justify-center space-x-2">
+          <span>🚪</span>
+          <span>Déconnexion</span>
+        </span>
       </button>
     </div>
   </aside>
 
   <!-- Sidebar (mobile) -->
   <div class="lg:hidden" [class.hidden]="!sidebarOpen">
-    <div class="fixed inset-0 bg-black/40" (click)="toggleSidebar()"></div>
-    <aside class="fixed inset-y-0 left-0 w-72 bg-gray-900 text-white p-4">
-      <div class="flex items-center justify-between h-12">
-        <span class="font-bold">Espace Client</span>
-        <button (click)="toggleSidebar()" class="text-white/80 hover:text-white">✕</button>
+    <div class="fixed inset-0 bg-black/60 backdrop-blur-sm z-40" (click)="toggleSidebar()"></div>
+    <aside class="fixed inset-y-0 left-0 w-80 sm:w-72 bg-gradient-to-b from-gray-900 to-gray-800 text-white p-4 shadow-2xl z-50 transform transition-transform duration-300">
+      <div class="flex items-center justify-between h-12 mb-6">
+        <div class="flex items-center space-x-2">
+          <div class="w-8 h-8 bg-gradient-to-br from-pink-500 to-pink-600 rounded-lg flex items-center justify-center">
+            <span class="text-white font-bold text-sm">👤</span>
+          </div>
+          <span class="font-bold text-lg text-white">Espace Client</span>
+        </div>
+        <button (click)="toggleSidebar()" class="text-white/80 hover:text-white p-2 rounded-lg hover:bg-white/10 transition-all">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+          </svg>
+        </button>
       </div>
 
-      <nav class="mt-4 space-y-2">
-        <a routerLink="home" routerLinkActive="!bg-pink-600" [routerLinkActiveOptions]="{ exact:true }"
-           (click)="toggleSidebar()" class="block px-4 py-2 rounded-md hover:bg-white/10">Accueil</a>
+      <nav class="space-y-2">
+        <a routerLink="home" routerLinkActive="!bg-gradient-to-r !from-pink-600 !to-pink-700 !text-white !shadow-lg" [routerLinkActiveOptions]="{ exact:true }"
+           (click)="toggleSidebar()" class="flex items-center space-x-3 px-4 py-3 rounded-xl hover:bg-gradient-to-r hover:from-white/5 hover:to-white/10 transition-all duration-200 text-gray-300 hover:text-white">
+          <span class="text-lg">🏠</span>
+          <span class="font-medium">Accueil</span>
+        </a>
 
-        <a routerLink="requests" routerLinkActive="!bg-pink-600"
-           (click)="toggleSidebar()" class="block px-4 py-2 rounded-md hover:bg-white/10">Mes demandes</a>
+        <a routerLink="requests" routerLinkActive="!bg-gradient-to-r !from-pink-600 !to-pink-700 !text-white !shadow-lg"
+           (click)="toggleSidebar()" class="flex items-center space-x-3 px-4 py-3 rounded-xl hover:bg-gradient-to-r hover:from-white/5 hover:to-white/10 transition-all duration-200 text-gray-300 hover:text-white">
+          <span class="text-lg">📋</span>
+          <span class="font-medium">Mes demandes</span>
+        </a>
 
-        <a routerLink="favorites" routerLinkActive="!bg-pink-600"
-           (click)="toggleSidebar()" class="block px-4 py-2 rounded-md hover:bg-white/10">Favoris</a>
+        <a routerLink="favorites" routerLinkActive="!bg-gradient-to-r !from-pink-600 !to-pink-700 !text-white !shadow-lg"
+           (click)="toggleSidebar()" class="flex items-center space-x-3 px-4 py-3 rounded-xl hover:bg-gradient-to-r hover:from-white/5 hover:to-white/10 transition-all duration-200 text-gray-300 hover:text-white">
+          <span class="text-lg">⭐</span>
+          <span class="font-medium">Favoris</span>
+        </a>
 
-        <a routerLink="settings" routerLinkActive="!bg-pink-600"
-           (click)="toggleSidebar()" class="block px-4 py-2 rounded-md hover:bg-white/10">Paramètres</a>
+        <a routerLink="settings" routerLinkActive="!bg-gradient-to-r !from-pink-600 !to-pink-700 !text-white !shadow-lg"
+           (click)="toggleSidebar()" class="flex items-center space-x-3 px-4 py-3 rounded-xl hover:bg-gradient-to-r hover:from-white/5 hover:to-white/10 transition-all duration-200 text-gray-300 hover:text-white">
+          <span class="text-lg">⚙️</span>
+          <span class="font-medium">Paramètres</span>
+        </a>
       </nav>
 
-      <div class="mt-6">
-        <button (click)="logout()"
-                class="w-full bg-pink-600 hover:bg-pink-700 text-white font-semibold py-2 rounded-md">
-          Déconnexion
+      <div class="absolute bottom-4 left-4 right-4">
+        <button (click)="logout(); toggleSidebar()"
+                class="w-full bg-gradient-to-r from-pink-600 to-pink-700 hover:from-pink-700 hover:to-pink-800 text-white font-semibold py-3 rounded-xl transition-all duration-200 shadow-lg">
+          <span class="flex items-center justify-center space-x-2">
+            <span>🚪</span>
+            <span>Déconnexion</span>
+          </span>
         </button>
       </div>
     </aside>
@@ -62,18 +106,31 @@
 
   <!-- Content -->
   <div class="flex-1 flex flex-col min-w-0">
-    <header class="h-16 bg-white border-b border-gray-200 flex items-center px-4 gap-3">
-      <button class="lg:hidden p-2 rounded hover:bg-gray-100" (click)="toggleSidebar()" aria-label="Open sidebar">
-        <svg class="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+    <header class="h-16 xl:h-20 bg-gradient-to-r from-gray-800/90 to-gray-700/90 backdrop-blur-md border-b border-white/10 flex items-center px-4 lg:px-6 gap-3 shadow-lg sticky top-0 z-30">
+      <button class="lg:hidden p-2 rounded-xl hover:bg-white/10 transition-all duration-200" (click)="toggleSidebar()" aria-label="Open sidebar">
+        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"></path>
         </svg>
       </button>
-      <h1 class="text-lg font-semibold">Tableau de bord Client</h1>
-      <div class="ml-auto text-sm text-gray-500">{{ userName }} · {{ userEmail }}</div>
+      <div class="flex-1">
+        <h1 class="text-lg xl:text-xl font-bold text-white">Tableau de bord Client</h1>
+        <p class="text-xs xl:text-sm text-gray-300 hidden sm:block">Gérez vos projets et trouvez les meilleurs artisans</p>
+      </div>
+      <div class="hidden sm:flex items-center space-x-3">
+        <div class="text-right">
+          <div class="text-sm font-medium text-white">{{ userName }}</div>
+          <div class="text-xs text-gray-300">{{ userEmail }}</div>
+        </div>
+        <div class="w-8 h-8 xl:w-10 xl:h-10 bg-gradient-to-br from-pink-500 to-pink-600 rounded-full flex items-center justify-center">
+          <span class="text-white font-bold text-xs xl:text-sm">{{ userName?.charAt(0)?.toUpperCase() || '👤' }}</span>
+        </div>
+      </div>
     </header>
 
-    <main class="p-4">
-      <router-outlet></router-outlet>
+    <main class="flex-1 p-4 sm:p-6 lg:p-8 overflow-auto">
+      <div class="max-w-7xl mx-auto">
+        <router-outlet></router-outlet>
+      </div>
     </main>
   </div>
 </div>

@@ -1,51 +1,72 @@
-<div class="min-h-screen bg-slate-950 text-slate-100 flex">
+<!-- Artisan Dashboard - Responsive Gradient Design -->
+<div class="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-pink-700 text-white flex">
   <!-- Sidebar (desktop) -->
-  <aside class="hidden lg:flex w-72 flex-col border-r border-slate-800 bg-slate-900/70">
-    <div class="h-16 flex items-center px-5 text-xl font-semibold tracking-wide">
-      🛠️ Artisan Panel
+  <aside class="hidden lg:flex w-72 xl:w-80 flex-col bg-gradient-to-b from-gray-900 to-gray-800 shadow-2xl">
+    <div class="h-16 xl:h-20 flex items-center px-5 bg-gradient-to-r from-gray-800 to-pink-900 border-b border-white/10">
+      <div class="flex items-center space-x-3">
+        <div class="w-8 h-8 xl:w-10 xl:h-10 bg-gradient-to-br from-pink-500 to-pink-600 rounded-lg flex items-center justify-center">
+          <span class="text-white font-bold text-sm xl:text-base">🔨</span>
+        </div>
+        <span class="text-lg xl:text-xl font-bold text-white tracking-wide">Artisan Panel</span>
+      </div>
     </div>
 
-    <nav class="px-3 py-2 space-y-1">
+    <nav class="px-3 py-4 space-y-2 flex-1">
       <a *ngFor="let i of nav"
          [routerLink]="i.path"
-         routerLinkActive="bg-slate-800 text-white"
-         class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-800 transition">
-        <span class="text-lg">{{ i.icon }}</span>
-        <span class="text-sm font-medium">{{ i.label }}</span>
+         routerLinkActive="bg-gradient-to-r from-pink-600 to-pink-700 text-white shadow-lg"
+         class="flex items-center gap-3 px-4 py-3 xl:py-4 rounded-xl hover:bg-gradient-to-r hover:from-white/5 hover:to-white/10 transition-all duration-200 text-gray-300 hover:text-white group">
+        <span class="text-lg xl:text-xl">{{ i.icon }}</span>
+        <span class="text-sm xl:text-base font-medium">{{ i.label }}</span>
       </a>
     </nav>
 
-    <div class="mt-auto p-3">
+    <div class="p-3">
       <button (click)="logout()"
-              class="w-full px-3 py-2 rounded-lg bg-rose-600 hover:bg-rose-700 text-white text-sm font-semibold">
-        Se déconnecter
+              class="w-full px-4 py-3 xl:py-4 rounded-xl bg-gradient-to-r from-pink-600 to-pink-700 hover:from-pink-700 hover:to-pink-800 text-white text-sm xl:text-base font-semibold transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-[1.02]">
+        <span class="flex items-center justify-center space-x-2">
+          <span>🚪</span>
+          <span>Se déconnecter</span>
+        </span>
       </button>
     </div>
   </aside>
 
   <!-- Sidebar (mobile) -->
   <div class="lg:hidden">
-    <div class="fixed inset-0 bg-black/60 z-40" *ngIf="sidebarOpen" (click)="toggleSidebar()"></div>
-    <aside class="fixed z-50 top-0 left-0 h-full w-72 bg-slate-900 border-r border-slate-800 transform transition-transform"
+    <div class="fixed inset-0 bg-black/60 backdrop-blur-sm z-40" *ngIf="sidebarOpen" (click)="toggleSidebar()"></div>
+    <aside class="fixed z-50 top-0 left-0 h-full w-80 sm:w-72 bg-gradient-to-b from-gray-900 to-gray-800 shadow-2xl transform transition-transform duration-300"
            [class.-translate-x-full]="!sidebarOpen">
-      <div class="h-16 flex items-center px-5 justify-between">
-        <div class="text-lg font-semibold">🛠️ Artisan Panel</div>
-        <button (click)="toggleSidebar()" class="p-2 rounded hover:bg-slate-800">✖</button>
+      <div class="h-16 flex items-center px-5 justify-between border-b border-white/10">
+        <div class="flex items-center space-x-2">
+          <div class="w-8 h-8 bg-gradient-to-br from-pink-500 to-pink-600 rounded-lg flex items-center justify-center">
+            <span class="text-white font-bold text-sm">🔨</span>
+          </div>
+          <span class="text-lg font-bold text-white">Artisan Panel</span>
+        </div>
+        <button (click)="toggleSidebar()" class="p-2 rounded-lg hover:bg-white/10 text-white/80 hover:text-white transition-all">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+          </svg>
+        </button>
       </div>
-      <nav class="px-3 py-2 space-y-1">
+      <nav class="px-3 py-4 space-y-2 flex-1">
         <a *ngFor="let i of nav"
            [routerLink]="i.path"
            (click)="toggleSidebar()"
-           routerLinkActive="bg-slate-800 text-white"
-           class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-800 transition">
+           routerLinkActive="bg-gradient-to-r from-pink-600 to-pink-700 text-white shadow-lg"
+           class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-gradient-to-r hover:from-white/5 hover:to-white/10 transition-all duration-200 text-gray-300 hover:text-white">
           <span class="text-lg">{{ i.icon }}</span>
           <span class="text-sm font-medium">{{ i.label }}</span>
         </a>
       </nav>
-      <div class="mt-auto p-3">
-        <button (click)="logout()"
-                class="w-full px-3 py-2 rounded-lg bg-rose-600 hover:bg-rose-700 text-white text-sm font-semibold">
-          Se déconnecter
+      <div class="absolute bottom-4 left-3 right-3">
+        <button (click)="logout(); toggleSidebar()"
+                class="w-full px-4 py-3 rounded-xl bg-gradient-to-r from-pink-600 to-pink-700 hover:from-pink-700 hover:to-pink-800 text-white text-sm font-semibold transition-all duration-200 shadow-lg">
+          <span class="flex items-center justify-center space-x-2">
+            <span>🚪</span>
+            <span>Se déconnecter</span>
+          </span>
         </button>
       </div>
     </aside>
@@ -54,16 +75,33 @@
   <!-- Main -->
   <div class="flex-1 flex flex-col">
     <!-- Topbar -->
-    <header class="h-16 flex items-center justify-between px-4 md:px-6 border-b border-slate-800 bg-slate-950/60 sticky top-0 z-30">
-      <div class="flex items-center gap-2">
-        <button class="lg:hidden p-2 rounded hover:bg-slate-800" (click)="toggleSidebar()">☰</button>
-        <h1 class="text-base md:text-lg font-semibold">Tableau de bord</h1>
+    <header class="h-16 xl:h-20 flex items-center justify-between px-4 lg:px-6 bg-gradient-to-r from-gray-800/90 to-gray-700/90 backdrop-blur-md border-b border-white/10 sticky top-0 z-30 shadow-lg">
+      <div class="flex items-center gap-3">
+        <button class="lg:hidden p-2 rounded-xl hover:bg-white/10 transition-all duration-200" (click)="toggleSidebar()">
+          <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+          </svg>
+        </button>
+        <div>
+          <h1 class="text-base lg:text-lg xl:text-xl font-bold text-white">Tableau de bord</h1>
+          <p class="text-xs xl:text-sm text-gray-300 hidden sm:block">Gérez vos projets et développez votre activité</p>
+        </div>
       </div>
-      <div class="text-xs md:text-sm text-slate-300">Bienvenue 👋</div>
+      <div class="hidden sm:flex items-center space-x-3">
+        <div class="text-right">
+          <div class="text-sm font-medium text-white">Bienvenue 👋</div>
+          <div class="text-xs text-gray-300">Artisan professionnel</div>
+        </div>
+        <div class="w-8 h-8 xl:w-10 xl:h-10 bg-gradient-to-br from-pink-500 to-pink-600 rounded-full flex items-center justify-center">
+          <span class="text-white font-bold text-xs xl:text-sm">🔨</span>
+        </div>
+      </div>
     </header>
 
-    <main class="p-4 md:p-6">
-      <router-outlet></router-outlet>
+    <main class="flex-1 p-4 sm:p-6 lg:p-8 overflow-auto">
+      <div class="max-w-7xl mx-auto">
+        <router-outlet></router-outlet>
+      </div>
     </main>
   </div>
 </div>
