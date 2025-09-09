@@ -28,18 +28,15 @@ interface ClientResponse {
 export class AdminHomeComponent implements OnInit {
   private readonly API_BASE = 'http://localhost:8091';
 
-  // إحصائيات (Signals)
   clients  = signal(0);
   artisans = signal(0);
   demandes = signal(0);
   avis     = signal(0);
 
-  // لائحة آخر العملاء
   loading = signal(false);
   error   = signal<string>('');
   data    = signal<Page<ClientResponse> | null>(null);
 
-  // pager صغير للجدول المصغر
   pageIdx = signal(0);
   size    = signal(5);
   totalPages = computed(() => this.data()?.totalPages ?? 1);
@@ -51,7 +48,6 @@ export class AdminHomeComponent implements OnInit {
     this.loadClients();
   }
 
-  // لو عندك /api/admin/stats غادي يكمّل الأرقام، وإلاّ يعمر clients فقط من totalElements
   private loadStats(): void {
     this.http.get<{clients:number; artisans:number; demandes:number; avis:number}>(`${this.API_BASE}/api/admin/stats`)
       .subscribe({

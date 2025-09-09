@@ -3,20 +3,20 @@
 
   <label class="grid gap-1">
     <span class="text-sm text-slate-300">Metier</span>
-    <input class="bg-slate-800 rounded p-2" [(ngModel)]="model.metier" />
+    <input class="bg-slate-800 text-white border border-gray-600 rounded p-2" [(ngModel)]="model.metier" />
   </label>
 
   <label class="grid gap-1">
     <span class="text-sm text-slate-300">Localisation</span>
-    <input class="bg-slate-800 rounded p-2" [(ngModel)]="model.localisation" />
+    <input class="bg-slate-800 text-white border border-gray-600 rounded p-2" [(ngModel)]="model.localisation" />
   </label>
 
   <label class="grid gap-1">
     <span class="text-sm text-slate-300">Description</span>
-    <textarea rows="4" class="bg-slate-800 rounded p-2" [(ngModel)]="model.description"></textarea>
+    <textarea rows="4" class="bg-slate-800 text-white border border-gray-600 rounded p-2" [(ngModel)]="model.description"></textarea>
   </label>
 
-  <button class="bg-emerald-600 rounded px-4 py-2" (click)="save()" [disabled]="saving">
+  <button class="bg-emerald-600 hover:bg-emerald-700 text-white rounded px-4 py-2" (click)="save()" [disabled]="saving">
     {{ saving ? 'Saving…' : 'Save' }}
   </button>
 </div>

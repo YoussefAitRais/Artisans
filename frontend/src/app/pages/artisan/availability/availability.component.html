@@ -16,7 +16,7 @@
             <div>De: <span class="font-semibold">{{ s.startTime }}</span></div>
             <div>À: <span class="font-semibold">{{ s.endTime }}</span></div>
           </div>
-          <button class="rounded border px-3 py-1" (click)="remove(s.id)">Delete</button>
+          <button class="rounded border border-gray-600 bg-gray-700 text-white hover:bg-gray-600 px-3 py-1" (click)="remove(s.id)">Delete</button>
         </div>
       </div>
     </div>
@@ -26,7 +26,7 @@
       <div class="font-semibold mb-2">Add slot</div>
 
       <div class="grid gap-2">
-        <select [(ngModel)]="draft.dayOfWeek" class="bg-slate-800 rounded p-2">
+        <select [(ngModel)]="draft.dayOfWeek" class="bg-slate-800 text-white border border-gray-600 rounded p-2">
           <option [ngValue]="1">Mon</option>
           <option [ngValue]="2">Tue</option>
           <option [ngValue]="3">Wed</option>
@@ -36,10 +36,10 @@
           <option [ngValue]="7">Sun</option>
         </select>
 
-        <input type="time" [(ngModel)]="draft.startTime" class="bg-slate-800 rounded p-2" />
-        <input type="time" [(ngModel)]="draft.endTime" class="bg-slate-800 rounded p-2" />
+        <input type="time" [(ngModel)]="draft.startTime" class="bg-slate-800 text-white border border-gray-600 rounded p-2" />
+        <input type="time" [(ngModel)]="draft.endTime" class="bg-slate-800 text-white border border-gray-600 rounded p-2" />
 
-        <button class="rounded bg-emerald-600 px-3 py-2" (click)="add()">Add</button>
+        <button class="rounded bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-2" (click)="add()">Add</button>
       </div>
     </div>
   </div>
