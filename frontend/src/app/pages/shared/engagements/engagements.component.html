@@ -1,0 +1,214 @@
+<div class="p-4 space-y-4">
+  <!-- Error Display -->
+  <div *ngIf="error()" class="p-4 bg-red-50 border border-red-200 rounded-lg">
+    <div class="text-red-700 text-sm">{{ error() }}</div>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="loading()" class="text-center py-8">
+    <div class="text-gray-500">Loading engagements...</div>
+  </div>
+
+  <!-- Empty State -->
+  <div *ngIf="!loading() && !hasEngagements()" class="text-center py-12">
+    <div class="text-6xl mb-4">📋</div>
+    <div class="text-gray-500 text-lg">No engagements found</div>
+    <div class="text-gray-400 text-sm mt-1">Your project engagements will appear here</div>
+  </div>
+
+  <!-- Engagements List -->
+  <div *ngIf="!loading() && hasEngagements()" class="space-y-4">
+    <div *ngFor="let engagement of engagements(); trackBy: trackEngagementById" 
+         class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+      
+      <!-- Header -->
+      <div class="flex items-start justify-between mb-4">
+        <div class="flex-1">
+          <div class="flex items-center gap-3 mb-2">
+            <h3 class="text-lg font-semibold text-gray-900">Project Engagement</h3>
+            <span class="px-2 py-1 rounded-full text-xs font-medium"
+                  [class]="getStatusColor(engagement.status)">
+              {{ getStatusText(engagement.status) }}
+            </span>
+          </div>
+          <div class="text-sm text-gray-600">
+            Created {{ formatDate(engagement.createdAt) }}
+          </div>
+        </div>
+        <div class="text-right">
+          <div class="text-lg font-bold text-gray-900">{{ formatPrice(engagement.agreedPrice) }}</div>
+          <div class="text-xs text-gray-500">Agreed Price</div>
+        </div>
+      </div>
+
+      <!-- Details -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+        <div class="space-y-2">
+          <div class="text-sm">
+            <span class="font-medium text-gray-700">Request:</span>
+            <span class="ml-2 text-gray-600">#{{ engagement.requestId }}</span>
+          </div>
+          <div class="text-sm">
+            <span class="font-medium text-gray-700">Quote:</span>
+            <span class="ml-2 text-gray-600">#{{ engagement.quoteId }}</span>
+          </div>
+        </div>
+        <div class="space-y-2" *ngIf="engagement.startDate || engagement.endDate">
+          <div class="text-sm" *ngIf="engagement.startDate">
+            <span class="font-medium text-gray-700">Start Date:</span>
+            <span class="ml-2 text-gray-600">{{ formatDate(engagement.startDate) }}</span>
+          </div>
+          <div class="text-sm" *ngIf="engagement.endDate">
+            <span class="font-medium text-gray-700">End Date:</span>
+            <span class="ml-2 text-gray-600">{{ formatDate(engagement.endDate) }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="flex flex-wrap gap-2 pt-4 border-t border-gray-100">
+        <!-- Confirm Schedule (Artisan only, PENDING_CONFIRMATION) -->
+        <button *ngIf="canConfirm(engagement)"
+                (click)="openConfirmModal(engagement)"
+                [disabled]="actionLoading() === engagement.id"
+                class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+          <span *ngIf="actionLoading() !== engagement.id" class="flex items-center gap-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+            </svg>
+            Confirm Schedule
+          </span>
+          <span *ngIf="actionLoading() === engagement.id" class="flex items-center gap-2">
+            <div class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+            Confirming...
+          </span>
+        </button>
+
+        <!-- Start Work (Both roles, SCHEDULED) -->
+        <button *ngIf="canStart(engagement)"
+                (click)="startEngagement(engagement)"
+                [disabled]="actionLoading() === engagement.id"
+                class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+          <span *ngIf="actionLoading() !== engagement.id" class="flex items-center gap-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h1m4 0h1m-6 4h8m-10-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+            Start Work
+          </span>
+          <span *ngIf="actionLoading() === engagement.id" class="flex items-center gap-2">
+            <div class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+            Starting...
+          </span>
+        </button>
+
+        <!-- Complete Work (Client only, IN_PROGRESS) -->
+        <button *ngIf="canComplete(engagement)"
+                (click)="completeEngagement(engagement)"
+                [disabled]="actionLoading() === engagement.id"
+                class="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+          <span *ngIf="actionLoading() !== engagement.id" class="flex items-center gap-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+            Mark Complete
+          </span>
+          <span *ngIf="actionLoading() === engagement.id" class="flex items-center gap-2">
+            <div class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+            Completing...
+          </span>
+        </button>
+
+        <!-- Cancel (Both roles, PENDING_CONFIRMATION or SCHEDULED) -->
+        <button *ngIf="canCancel(engagement)"
+                (click)="cancelEngagement(engagement)"
+                [disabled]="actionLoading() === engagement.id"
+                class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+          <span *ngIf="actionLoading() !== engagement.id" class="flex items-center gap-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+            Cancel
+          </span>
+          <span *ngIf="actionLoading() === engagement.id" class="flex items-center gap-2">
+            <div class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+            Cancelling...
+          </span>
+        </button>
+
+        <!-- Messages -->
+        <button (click)="openMessages(engagement)"
+                class="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg text-sm font-medium transition-colors">
+          <span class="flex items-center gap-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+            </svg>
+            Messages
+          </span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Pagination -->
+  <div *ngIf="totalPages() > 1" class="flex justify-center mt-6">
+    <div class="flex items-center gap-2">
+      <button (click)="prevPage()" 
+              [disabled]="currentPage() === 0"
+              class="px-3 py-2 rounded border border-gray-300 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed text-sm">
+        Previous
+      </button>
+      <span class="text-sm text-gray-600 px-3">
+        Page {{ currentPage() + 1 }} of {{ totalPages() }}
+      </span>
+      <button (click)="nextPage()" 
+              [disabled]="currentPage() + 1 >= totalPages()"
+              class="px-3 py-2 rounded border border-gray-300 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed text-sm">
+        Next
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Confirm Schedule Modal -->
+<div *ngIf="showConfirmModal()" 
+     class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+  <div class="bg-white rounded-lg p-6 w-full max-w-md mx-4">
+    <h3 class="text-lg font-semibold text-gray-900 mb-4">Confirm Schedule</h3>
+    
+    <div class="space-y-4">
+      <!-- Start Date -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Start Date</label>
+        <input type="date" 
+               [ngModel]="confirmForm().startDate"
+               (ngModelChange)="updateStartDate($event)"
+               class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+      </div>
+
+      <!-- End Date -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">End Date</label>
+        <input type="date" 
+               [ngModel]="confirmForm().endDate"
+               (ngModelChange)="updateEndDate($event)"
+               class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+      </div>
+
+      <!-- Error in modal -->
+      <div *ngIf="error()" class="text-red-600 text-sm">{{ error() }}</div>
+    </div>
+
+    <!-- Modal Actions -->
+    <div class="flex gap-3 mt-6">
+      <button (click)="closeConfirmModal()"
+              class="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors">
+        Cancel
+      </button>
+      <button (click)="confirmEngagement()"
+              [disabled]="!confirmForm().startDate || !confirmForm().endDate"
+              class="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+        Confirm
+      </button>
+    </div>
+  </div>
+</div>

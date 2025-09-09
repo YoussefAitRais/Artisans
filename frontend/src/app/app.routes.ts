@@ -19,6 +19,8 @@ import { ClientHomeComponent } from './pages/client/home/client-home.component';
 import { RequestsComponent } from './pages/client/requests/requests.component';
 import { FavoritesComponent } from './pages/client/favorites/favorites.component';
 import { SettingsComponent } from './pages/client/settings/settings.component';
+import { ClientMessagingComponent } from './pages/client/messaging/client-messaging.component';
+import { ClientEngagementsComponent } from './pages/client/engagements/client-engagements.component';
 
 import { ArtisanDashboardComponent } from './layout/artisan-dashboard/artisan-dashboard.component';
 import { ArtisanHomeComponent } from './pages/artisan/home-artisan/artisan-home.component';
@@ -28,6 +30,8 @@ import { ArtisanAvailabilityComponent } from './pages/artisan/availability/avail
 import { ArtisanPortfolioComponent } from './pages/artisan/portfolio/portfolio.component';
 import { ArtisanReviewsComponent } from './pages/artisan/reviews/reviews.component';
 import { ArtisanProfileComponent } from './pages/artisan/profile/profile.component';
+import { ArtisanMessagingComponent } from './pages/artisan/messaging/artisan-messaging.component';
+import { ArtisanEngagementsComponent } from './pages/artisan/engagements/artisan-engagements.component';
 
 // Guards (functional)
 import { authCanMatch } from './guards/auth.guard';
@@ -71,6 +75,8 @@ export const routes: Routes = [
       { path: '', redirectTo: 'home', pathMatch: 'full' },
       { path: 'home', component: ClientHomeComponent },
       { path: 'requests', component: RequestsComponent },
+      { path: 'messages', component: ClientMessagingComponent },
+      { path: 'engagements', component: ClientEngagementsComponent },
       { path: 'favorites', component: FavoritesComponent },
       { path: 'settings', component: SettingsComponent },
     ]
@@ -86,6 +92,8 @@ export const routes: Routes = [
       { path: 'home',         component: ArtisanHomeComponent },
       { path: 'requests',     component: InboxComponent },
       { path: 'quotes',       component: ArtisanQuotesComponent },
+      { path: 'messages',     component: ArtisanMessagingComponent },
+      { path: 'engagements',  component: ArtisanEngagementsComponent },
       { path: 'availability', component: ArtisanAvailabilityComponent },
       { path: 'portfolio',    component: ArtisanPortfolioComponent },
       { path: 'reviews',      component: ArtisanReviewsComponent },

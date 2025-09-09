@@ -21,6 +21,8 @@ export class ArtisanDashboardComponent {
     { label: 'Accueil',            path: '/artisan/home',          icon: '🏠' },
     { label: 'Demandes reçues',    path: '/artisan/requests',      icon: '📥' },
     { label: 'Mes devis',          path: '/artisan/quotes',        icon: '📄' },
+    { label: 'Messages',           path: '/artisan/messages',      icon: '💬' },
+    { label: 'Engagements',        path: '/artisan/engagements',   icon: '🤝' },
     { label: 'Disponibilités',     path: '/artisan/availability',  icon: '🗓️' },
     { label: 'Portfolio',          path: '/artisan/portfolio',     icon: '🖼️' },
     { label: 'Avis',               path: '/artisan/reviews',       icon: '⭐' },

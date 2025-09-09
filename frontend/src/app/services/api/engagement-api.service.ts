@@ -3,7 +3,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
 // === API base ===
-const API = 'http://localhost:8091/api/engagements';
+const API_BASE = 'http://localhost:8091';
 
 // ====== Models ======
 export type EngagementStatus =
@@ -13,7 +13,7 @@ export type EngagementStatus =
   | 'COMPLETED'
   | 'CANCELLED';
 
-export interface Engagement {
+export interface EngagementResponse {
   id: number;
   requestId: number;
   quoteId: number;
@@ -34,34 +34,45 @@ export interface Page<T> {
   size: number;
 }
 
-export interface ConfirmDto {
+export interface EngagementConfirmRequest {
   startDate: string; // yyyy-MM-dd
   endDate: string;   // yyyy-MM-dd
 }
 
 @Injectable({ providedIn: 'root' })
 export class EngagementApiService {
+  private base = `${API_BASE}/api/engagements`;
+  
   constructor(private http: HttpClient) {}
 
-  /** engagements */
-  getMine(page = 0, size = 10): Observable<Page<Engagement>> {
+  /** Get my engagements (role-aware) */
+  myEngagements(page = 0, size = 10): Observable<Page<EngagementResponse>> {
     const params = new HttpParams().set('page', page).set('size', size);
-    return this.http.get<Page<Engagement>>(`${API}/me`, { params });
+    return this.http.get<Page<EngagementResponse>>(`${this.base}/mine`, { params });
   }
 
-  confirm(id: number, dto: ConfirmDto): Observable<Engagement> {
-    return this.http.patch<Engagement>(`${API}/${id}/confirm`, dto);
+  /** Get single engagement details */
+  getEngagement(id: number): Observable<EngagementResponse> {
+    return this.http.get<EngagementResponse>(`${this.base}/${id}`);
   }
 
-  start(id: number): Observable<Engagement> {
-    return this.http.patch<Engagement>(`${API}/${id}/start`, {});
+  /** Artisan confirms schedule: PENDING_CONFIRMATION -> SCHEDULED */
+  confirmAsArtisan(id: number, request: EngagementConfirmRequest): Observable<EngagementResponse> {
+    return this.http.post<EngagementResponse>(`${this.base}/${id}/confirm`, request);
   }
 
-  cancel(id: number): Observable<Engagement> {
-    return this.http.patch<Engagement>(`${API}/${id}/cancel`, {});
+  /** Start work: SCHEDULED -> IN_PROGRESS */
+  startEngagement(id: number): Observable<EngagementResponse> {
+    return this.http.post<EngagementResponse>(`${this.base}/${id}/start`, {});
   }
 
-  complete(id: number): Observable<Engagement> {
-    return this.http.patch<Engagement>(`${API}/${id}/complete`, {});
+  /** Complete work: IN_PROGRESS -> COMPLETED (client action) */
+  completeEngagement(id: number): Observable<EngagementResponse> {
+    return this.http.post<EngagementResponse>(`${this.base}/${id}/complete`, {});
+  }
+
+  /** Cancel engagement: PENDING_CONFIRMATION/SCHEDULED -> CANCELLED */
+  cancelEngagement(id: number): Observable<EngagementResponse> {
+    return this.http.post<EngagementResponse>(`${this.base}/${id}/cancel`, {});
   }
 }

@@ -1,0 +1,207 @@
+<div class="flex h-screen bg-gray-100">
+  <!-- Conversations Sidebar -->
+  <div class="w-full md:w-1/3 lg:w-1/4 bg-white border-r border-gray-200 flex flex-col">
+    <!-- Header -->
+    <div class="p-4 border-b border-gray-200 bg-gradient-to-r from-gray-800 to-pink-700">
+      <div class="flex items-center justify-between">
+        <h2 class="text-lg font-semibold text-white">💬 Messages</h2>
+      </div>
+    </div>
+
+    <!-- Error Display -->
+    <div *ngIf="error()" class="p-4 bg-red-50 border-b border-red-200">
+      <div class="text-red-700 text-sm">{{ error() }}</div>
+    </div>
+
+    <!-- Conversations List -->
+    <div class="flex-1 overflow-y-auto">
+      <!-- Loading State -->
+      <div *ngIf="conversationsLoading()" class="p-4 text-center">
+        <div class="text-gray-500">Loading conversations...</div>
+      </div>
+
+      <!-- Empty State -->
+      <div *ngIf="!conversationsLoading() && !hasConversations()" class="p-6 text-center">
+        <div class="text-4xl mb-3">📭</div>
+        <div class="text-gray-500 text-sm">No conversations yet</div>
+        <div class="text-gray-400 text-xs mt-1">Messages will appear here</div>
+        
+
+      </div>
+
+      <!-- Conversations -->
+      <div *ngIf="!conversationsLoading() && hasConversations()">
+        <div *ngFor="let conv of conversations(); trackBy: trackConversationById" 
+             class="p-4 border-b border-gray-100 hover:bg-gray-50 cursor-pointer transition-colors"
+             [class.bg-blue-50]="currentConversation()?.id === conv.id"
+             (click)="selectConversation(conv)">
+          <div class="flex items-center justify-between">
+            <div class="flex-1">
+              <div class="font-medium text-gray-900 text-sm">
+                Engagement #{{ conv.engagementId }}
+              </div>
+              <div class="text-gray-500 text-xs mt-1">
+                {{ formatConversationDate(conv.createdAt) }}
+              </div>
+            </div>
+            <div class="text-gray-400">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+              </svg>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Conversations Pagination -->
+    <div *ngIf="conversationsTotalPages() > 1" class="p-3 border-t border-gray-200 bg-gray-50">
+      <div class="flex items-center justify-between text-xs">
+        <button (click)="prevConversationsPage()" 
+                [disabled]="conversationsPage() === 0"
+                class="px-2 py-1 rounded border border-gray-300 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
+          Previous
+        </button>
+        <span class="text-gray-500">
+          Page {{ conversationsPage() + 1 }} of {{ conversationsTotalPages() }}
+        </span>
+        <button (click)="nextConversationsPage()" 
+                [disabled]="conversationsPage() + 1 >= conversationsTotalPages()"
+                class="px-2 py-1 rounded border border-gray-300 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
+          Next
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Chat Area -->
+  <div class="flex-1 flex flex-col">
+    <!-- No Conversation Selected -->
+    <div *ngIf="!currentConversation()" class="flex-1 flex items-center justify-center bg-gray-50">
+      <div class="text-center">
+        <div class="text-6xl mb-4">💬</div>
+        <div class="text-gray-500 text-lg">Select a conversation</div>
+        <div class="text-gray-400 text-sm mt-1">Choose a conversation from the sidebar to start messaging</div>
+      </div>
+    </div>
+
+    <!-- Conversation Selected -->
+    <div *ngIf="currentConversation()" class="flex-1 flex flex-col">
+      <!-- Chat Header -->
+      <div class="p-4 border-b border-gray-200 bg-white">
+        <div class="flex items-center justify-between">
+          <div>
+            <h3 class="font-semibold text-gray-900">Engagement #{{ currentConversation()!.engagementId }}</h3>
+            <div class="text-gray-500 text-sm">
+              Conversation started {{ formatConversationDate(currentConversation()!.createdAt) }}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Messages Area -->
+      <div class="flex-1 overflow-y-auto p-4 bg-gray-50">
+        <!-- Messages Loading -->
+        <div *ngIf="messagesLoading()" class="text-center py-4">
+          <div class="text-gray-500">Loading messages...</div>
+        </div>
+
+        <!-- No Messages -->
+        <div *ngIf="!messagesLoading() && !hasMessages()" class="text-center py-8">
+          <div class="text-3xl mb-2">💭</div>
+          <div class="text-gray-500">No messages yet</div>
+          <div class="text-gray-400 text-sm mt-1">Start the conversation by sending a message</div>
+        </div>
+
+        <!-- Messages List -->
+        <div *ngIf="!messagesLoading() && hasMessages()" class="space-y-3">
+          <div *ngFor="let message of messages(); trackBy: trackMessageById" 
+               class="flex"
+               [class.justify-end]="isMyMessage(message)">
+            <div class="max-w-xs lg:max-w-md px-4 py-2 rounded-lg"
+                 [class.bg-blue-600]="isMyMessage(message)"
+                 [class.text-white]="isMyMessage(message)"
+                 [class.bg-white]="!isMyMessage(message)"
+                 [class.text-gray-900]="!isMyMessage(message)"
+                 [class.border]="!isMyMessage(message)"
+                 [class.border-gray-200]="!isMyMessage(message)">
+              <div class="text-sm">{{ message.body }}</div>
+              <div class="text-xs mt-1"
+                   [class.text-blue-200]="isMyMessage(message)"
+                   [class.text-gray-500]="!isMyMessage(message)">
+                {{ getMessageSenderLabel(message.senderRole) }} • {{ formatMessageTime(message.createdAt) }}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Messages Pagination -->
+        <div *ngIf="messagesTotalPages() > 1" class="flex justify-center mt-4">
+          <div class="flex items-center gap-2 text-xs">
+            <button (click)="prevMessagesPage()" 
+                    [disabled]="messagesPage() === 0"
+                    class="px-2 py-1 rounded border border-gray-300 bg-white hover:bg-gray-50 disabled:opacity-50">
+              ← Older
+            </button>
+            <span class="text-gray-500">{{ messagesPage() + 1 }} / {{ messagesTotalPages() }}</span>
+            <button (click)="nextMessagesPage()" 
+                    [disabled]="messagesPage() + 1 >= messagesTotalPages()"
+                    class="px-2 py-1 rounded border border-gray-300 bg-white hover:bg-gray-50 disabled:opacity-50">
+              Newer →
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Message Input -->
+      <div class="p-4 border-t border-gray-200 bg-white">
+        <!-- Debug Info (remove in production) -->
+        <div class="mb-2 text-xs text-gray-500 bg-gray-50 p-2 rounded" *ngIf="currentConversation()">
+          🔍 Debug: Conversation {{ currentConversation()!.id }} | Can send: {{ canSendMessage() ? '✅' : '❌' }} | 
+          Message length: {{ newMessageText().length }}
+        </div>
+        
+        <!-- Error display -->
+        <div *ngIf="error()" class="mb-3 p-3 bg-red-50 border border-red-200 rounded-lg">
+          <div class="text-red-700 text-sm">{{ error() }}</div>
+        </div>
+        
+        <!-- Conversation selection prompt -->
+        <div *ngIf="!currentConversation()" class="mb-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+          <div class="text-blue-700 text-sm">💡 Please select a conversation from the sidebar to start messaging.</div>
+        </div>
+        
+        <div class="flex items-end gap-3">
+          <div class="flex-1">
+            <textarea 
+              [ngModel]="newMessageText()"
+              (ngModelChange)="newMessageText.set($event)"
+              (keydown)="onMessageKeyDown($event)"
+              placeholder="Type your message... (Press Enter to send)"
+              rows="2"
+              [disabled]="!currentConversation()"
+              class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm resize-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed">
+            </textarea>
+            <div class="text-xs text-gray-500 mt-1">
+              {{ newMessageText().length }}/1000 characters
+            </div>
+          </div>
+          <button (click)="sendMessage()" 
+                  [disabled]="!canSendMessage()"
+                  class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+            <span *ngIf="!sending()" class="flex items-center gap-2">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
+              </svg>
+              Send
+            </span>
+            <span *ngIf="sending()" class="flex items-center gap-2">
+              <div class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+              Sending...
+            </span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
