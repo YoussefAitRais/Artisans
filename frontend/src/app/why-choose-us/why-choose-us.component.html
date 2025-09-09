@@ -1,106 +1,103 @@
-<section class="relative bg-gradient-to-br from-blue-900 to-indigo-800 text-white overflow-hidden">
-  <div class="absolute inset-0 bg-black opacity-50"></div>
-  <div
-    class="absolute inset-0 bg-cover bg-center"
-    style="background-image: url('assets/Images/artisans.jpg');"
-  ></div>
+<!-- Enhanced Why Choose Us Section with Better Responsive Design -->
+<section class="relative bg-[#111827] text-white overflow-hidden">
+  <!-- Background Elements -->
+  <div class="absolute inset-0 bg-gradient-to-br from-gray-900/90 via-gray-800/80 to-pink-900/20"></div>
+  <div class="absolute inset-0 bg-cover bg-center opacity-10" style="background-image: url('assets/Images/artisans.jpg');"></div>
+  
+  <!-- Floating background animations -->
+  <div class="absolute top-10 right-10 w-64 h-64 bg-pink-600/10 rounded-full blur-3xl animate-pulse"></div>
+  <div class="absolute bottom-10 left-10 w-80 h-80 bg-blue-600/5 rounded-full blur-3xl animate-pulse delay-1000"></div>
 
-  <div class="container mx-auto px-4 py-24 md:py-32 relative z-10">
-    <div class="flex flex-col md:flex-row items-center justify-between">
-      <!-- Left Side -->
-      <div class="w-full md:w-1/2 mb-12 md:mb-0">
-        <h1 class="text-5xl md:text-6xl font-bold mb-6 leading-tight">
-          Innovate.<br />Transform.<br />Succeed.
-        </h1>
-        <p class="text-xl mb-8 text-gray-300">
-          Empowering businesses with cutting-edge solutions for a digital
-          future.
-        </p>
-        <div class="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
-          <a
-            href="#"
-            class="bg-white text-blue-900 font-semibold px-8 py-3 rounded-full hover:bg-blue-100 transition duration-300 text-center"
-          >
-            Get Started
+  <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20 lg:py-24 xl:py-32 relative z-10">
+    <div class="grid grid-cols-1 lg:grid-cols-2 items-center gap-12 lg:gap-16">
+      <!-- Left Side - Enhanced Content -->
+      <div class="space-y-8">
+        <div class="space-y-6">
+          <h1 class="text-4xl sm:text-5xl lg:text-6xl font-bold leading-tight">
+            <span class="block text-white">Innovate.</span>
+            <span class="block bg-gradient-to-r from-pink-400 to-pink-600 bg-clip-text text-transparent">Transform.</span>
+            <span class="block text-white">Succeed.</span>
+          </h1>
+          <p class="text-lg sm:text-xl text-gray-300 max-w-lg leading-relaxed">
+            Empowering businesses with cutting-edge solutions for a digital future.
+          </p>
+        </div>
+        
+        <!-- Enhanced Action Buttons -->
+        <div class="flex flex-col sm:flex-row gap-4 sm:gap-6">
+          <a href="#" class="group inline-flex items-center justify-center px-8 py-4 bg-white text-gray-900 font-semibold rounded-full hover:bg-gray-100 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl text-center">
+            <span>Get Started</span>
+            <svg class="ml-2 w-5 h-5 transition-transform duration-200 group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+            </svg>
           </a>
-          <a
-            href="#"
-            class="border-2 border-white text-white font-semibold px-8 py-3 rounded-full hover:bg-white hover:text-blue-900 transition duration-300 text-center"
-          >
-            Learn More
+          <a href="#" class="group inline-flex items-center justify-center px-8 py-4 border-2 border-white/30 text-white font-semibold rounded-full hover:border-white hover:bg-white/10 transition-all duration-300 backdrop-blur-sm text-center">
+            <span>Learn More</span>
+            <svg class="ml-2 w-5 h-5 transition-transform duration-200 group-hover:scale-110" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
           </a>
         </div>
       </div>
 
-      <!-- Right Side -->
-      <div class="w-full md:w-1/2 md:pl-12">
-        <div class="bg-[#111827] bg-opacity-90 backdrop-filter backdrop-blur-lg rounded-xl p-8 shadow-2xl">
-        <h2 class="text-2xl font-semibold mb-6">Why MyCompany?</h2>
-          <ul class="space-y-4">
-            <li class="flex items-center">
-              <svg
-                class="w-6 h-6 mr-3 text-yellow-400"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M13 10V3L4 14h7v7l9-11h-7z"
-                ></path>
-              </svg>
-              <span>Lightning-fast Performance</span>
-            </li>
-            <li class="flex items-center">
-              <svg
-                class="w-6 h-6 mr-3 text-green-400"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
-                ></path>
-              </svg>
-              <span>Bank-grade Security</span>
-            </li>
-            <li class="flex items-center">
-              <svg
-                class="w-6 h-6 mr-3 text-purple-400"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"
-                ></path>
-              </svg>
-              <span>AI-powered Insights</span>
-            </li>
-          </ul>
+      <!-- Right Side - Enhanced Features Card -->
+      <div class="lg:pl-8">
+        <div class="relative group">
+          <!-- Card glow effect -->
+          <div class="absolute inset-0 bg-gradient-to-r from-pink-600/20 to-blue-600/20 rounded-2xl blur-xl opacity-75 group-hover:opacity-100 transition-opacity duration-300"></div>
+          
+          <div class="relative bg-[#111827]/90 backdrop-blur-lg rounded-2xl p-6 sm:p-8 shadow-2xl border border-white/10">
+            <h2 class="text-2xl sm:text-3xl font-bold mb-8 text-center lg:text-left">Why Herfa?</h2>
+            
+            <ul class="space-y-6">
+              <li class="flex items-start gap-4 p-4 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all duration-200">
+                <div class="flex-shrink-0 w-12 h-12 bg-yellow-500/20 rounded-xl flex items-center justify-center">
+                  <svg class="w-6 h-6 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                  </svg>
+                </div>
+                <div>
+                  <h3 class="font-semibold text-white mb-1">Lightning-fast Performance</h3>
+                  <p class="text-gray-400 text-sm">Optimized for speed and efficiency</p>
+                </div>
+              </li>
+              
+              <li class="flex items-start gap-4 p-4 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all duration-200">
+                <div class="flex-shrink-0 w-12 h-12 bg-green-500/20 rounded-xl flex items-center justify-center">
+                  <svg class="w-6 h-6 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                  </svg>
+                </div>
+                <div>
+                  <h3 class="font-semibold text-white mb-1">Bank-grade Security</h3>
+                  <p class="text-gray-400 text-sm">Your data is safe and protected</p>
+                </div>
+              </li>
+              
+              <li class="flex items-start gap-4 p-4 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all duration-200">
+                <div class="flex-shrink-0 w-12 h-12 bg-purple-500/20 rounded-xl flex items-center justify-center">
+                  <svg class="w-6 h-6 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
+                  </svg>
+                </div>
+                <div>
+                  <h3 class="font-semibold text-white mb-1">AI-powered Insights</h3>
+                  <p class="text-gray-400 text-sm">Smart analytics and recommendations</p>
+                </div>
+              </li>
+            </ul>
+          </div>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- SVG Shape -->
+  <!-- Enhanced SVG Wave -->
   <div class="absolute bottom-0 left-0 right-0">
-    <svg viewBox="0 0 1440 120" fill="none">
-      <path
-        d="M0 120L60 105C120 90 240 60 360 45C480 30 600 30 720 37.5C840 45 960 60 1080 67.5C1200 75 1320 75 1380 75L1440 75V120H1380C1320 120 1200 120 1080 120C960 120 840 120 720 120C600 120 480 120 360 120C240 120 120 120 60 120H0Z"
-        fill="#db2777"
-      />
+    <svg viewBox="0 0 1440 120" fill="none" class="w-full h-20 sm:h-24 lg:h-30">
+      <path d="M0 120L60 105C120 90 240 60 360 45C480 30 600 30 720 37.5C840 45 960 60 1080 67.5C1200 75 1320 75 1380 75L1440 75V120H1380C1320 120 1200 120 1080 120C960 120 840 120 720 120C600 120 480 120 360 120C240 120 120 120 60 120H0Z" fill="#db2777" />
     </svg>
   </div>
-
 </section>
 
 

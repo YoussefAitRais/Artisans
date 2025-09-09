@@ -7,7 +7,7 @@ import { WhyChooseUsComponent } from '../why-choose-us/why-choose-us.component';
 import { WhyUsComponent } from '../why-us/why-us.component';
 
 @Component({
-  selector: 'app-homebanner',            // ← بدلنا selector
+  selector: 'app-homebanner',      
   standalone: true,
   imports: [
     NavbarComponent,

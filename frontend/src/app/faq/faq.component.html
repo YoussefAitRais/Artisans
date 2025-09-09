@@ -1,38 +1,126 @@
-<div class=" bg-[#111827] flex min-h-screen items-center justify-center">
-  <div class="mx-auto w-full max-w-2xl px-2">
-    <h1 class="mb-8 text-center text-white text-3xl font-bold">Frequently Asked Questions</h1>
+<!-- Enhanced FAQ Section with Better Responsive Design -->
+<section class="bg-[#111827] text-white py-16 sm:py-20 lg:py-24 relative overflow-hidden">
+  <!-- Background elements -->
+  <div class="absolute inset-0 bg-gradient-to-br from-gray-900/50 via-gray-800/30 to-pink-900/20"></div>
+  <div class="absolute top-20 right-20 w-72 h-72 bg-pink-600/10 rounded-full blur-3xl animate-pulse"></div>
+  <div class="absolute bottom-20 left-20 w-96 h-96 bg-blue-600/5 rounded-full blur-3xl animate-pulse delay-1000"></div>
+  
+  <div class="container mx-auto px-4 sm:px-6 lg:px-8 max-w-4xl relative z-10">
+    <!-- Enhanced Header -->
+    <div class="text-center mb-12 lg:mb-16">
+      <div class="inline-flex items-center justify-center px-4 py-2 mb-6 bg-white/10 backdrop-blur-sm rounded-full border border-white/20">
+        <span class="text-gray-300 font-medium uppercase tracking-wider text-sm">Support</span>
+      </div>
+      
+      <h1 class="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4">
+        <span class="block bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">
+          Frequently Asked
+        </span>
+        <span class="block bg-gradient-to-r from-pink-400 to-pink-600 bg-clip-text text-transparent">
+          Questions
+        </span>
+      </h1>
+      
+      <p class="text-gray-400 text-lg sm:text-xl max-w-2xl mx-auto">
+        Find answers to common questions about our platform and services.
+      </p>
+    </div>
 
-    <!-- FAQ Item 1 -->
-    <div class="mb-4 rounded-lg border bg-[#db2777]">
-      <button (click)="toggle(1)" class="flex w-full items-center justify-between px-6 py-4 text-left focus:outline-none">
-        <span class="text-lg font-semibold">What is Tailwind CSS?</span>
-        <span>{{ isOpen(1) ? '−' : '+' }}</span>
-      </button>
-      <div *ngIf="isOpen(1)" @fade class="px-6 pb-4">
-        <p class="text-white">Tailwind CSS is a utility-first CSS framework for rapidly building custom user interfaces.</p>
+    <!-- Enhanced FAQ Items -->
+    <div class="space-y-4 lg:space-y-6">
+      <!-- FAQ Item 1 -->
+      <div class="group relative">
+        <!-- Glow effect -->
+        <div class="absolute inset-0 bg-gradient-to-r from-pink-600/10 to-purple-600/10 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+        
+        <div class="relative bg-gradient-to-r from-pink-600 to-pink-700 rounded-2xl border border-pink-500/20 overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300">
+          <button (click)="toggle(1)" class="flex w-full items-center justify-between px-6 sm:px-8 py-6 text-left focus:outline-none group">
+            <span class="text-lg sm:text-xl font-semibold text-white pr-4">What is Tailwind CSS?</span>
+            <div class="flex-shrink-0 w-8 h-8 bg-white/20 rounded-full flex items-center justify-center transition-transform duration-200" [class.rotate-45]="isOpen(1)">
+              <span class="text-white font-bold text-xl">{{ isOpen(1) ? '−' : '+' }}</span>
+            </div>
+          </button>
+          <div *ngIf="isOpen(1)" @fade class="px-6 sm:px-8 pb-6">
+            <div class="border-t border-white/20 pt-4">
+              <p class="text-white/90 leading-relaxed">Tailwind CSS is a utility-first CSS framework for rapidly building custom user interfaces with pre-designed components and responsive design capabilities.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- FAQ Item 2 -->
+      <div class="group relative">
+        <!-- Glow effect -->
+        <div class="absolute inset-0 bg-gradient-to-r from-pink-600/10 to-purple-600/10 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+        
+        <div class="relative bg-gradient-to-r from-pink-600 to-pink-700 rounded-2xl border border-pink-500/20 overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300">
+          <button (click)="toggle(2)" class="flex w-full items-center justify-between px-6 sm:px-8 py-6 text-left focus:outline-none group">
+            <span class="text-lg sm:text-xl font-semibold text-white pr-4">What is Alpine.js?</span>
+            <div class="flex-shrink-0 w-8 h-8 bg-white/20 rounded-full flex items-center justify-center transition-transform duration-200" [class.rotate-45]="isOpen(2)">
+              <span class="text-white font-bold text-xl">{{ isOpen(2) ? '−' : '+' }}</span>
+            </div>
+          </button>
+          <div *ngIf="isOpen(2)" @fade class="px-6 sm:px-8 pb-6">
+            <div class="border-t border-white/20 pt-4">
+              <p class="text-white/90 leading-relaxed">Alpine.js is a minimal framework for composing behavior directly in your HTML. It's like jQuery for the modern web, offering reactive and declarative nature of big frameworks like Vue or React at a much lower cost.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- FAQ Item 3 -->
+      <div class="group relative">
+        <!-- Glow effect -->
+        <div class="absolute inset-0 bg-gradient-to-r from-pink-600/10 to-purple-600/10 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+        
+        <div class="relative bg-gradient-to-r from-pink-600 to-pink-700 rounded-2xl border border-pink-500/20 overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300">
+          <button (click)="toggle(3)" class="flex w-full items-center justify-between px-6 sm:px-8 py-6 text-left focus:outline-none group">
+            <span class="text-lg sm:text-xl font-semibold text-white pr-4">How do I use Tailwind with Alpine.js?</span>
+            <div class="flex-shrink-0 w-8 h-8 bg-white/20 rounded-full flex items-center justify-center transition-transform duration-200" [class.rotate-45]="isOpen(3)">
+              <span class="text-white font-bold text-xl">{{ isOpen(3) ? '−' : '+' }}</span>
+            </div>
+          </button>
+          <div *ngIf="isOpen(3)" @fade class="px-6 sm:px-8 pb-6">
+            <div class="border-t border-white/20 pt-4">
+              <p class="text-white/90 leading-relaxed">You can use Tailwind CSS for styling and Alpine.js for interactivity. They work seamlessly together to create lightweight, dynamic components without the overhead of larger frameworks.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- FAQ Item 4 - Additional -->
+      <div class="group relative">
+        <!-- Glow effect -->
+        <div class="absolute inset-0 bg-gradient-to-r from-pink-600/10 to-purple-600/10 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+        
+        <div class="relative bg-gradient-to-r from-pink-600 to-pink-700 rounded-2xl border border-pink-500/20 overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300">
+          <button (click)="toggle(4)" class="flex w-full items-center justify-between px-6 sm:px-8 py-6 text-left focus:outline-none group">
+            <span class="text-lg sm:text-xl font-semibold text-white pr-4">How do I find the right artisan?</span>
+            <div class="flex-shrink-0 w-8 h-8 bg-white/20 rounded-full flex items-center justify-center transition-transform duration-200" [class.rotate-45]="isOpen(4)">
+              <span class="text-white font-bold text-xl">{{ isOpen(4) ? '−' : '+' }}</span>
+            </div>
+          </button>
+          <div *ngIf="isOpen(4)" @fade class="px-6 sm:px-8 pb-6">
+            <div class="border-t border-white/20 pt-4">
+              <p class="text-white/90 leading-relaxed">Use our search feature to find artisans by category, location, and ratings. Each artisan profile includes reviews, portfolio samples, and verified credentials to help you make the best choice.</p>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
 
-    <!-- FAQ Item 2 -->
-    <div class="mb-4 rounded-lg border bg-[#db2777]">
-      <button (click)="toggle(2)" class="flex w-full items-center justify-between px-6 py-4 text-left focus:outline-none">
-        <span class="text-lg font-semibold">What is Alpine.js?</span>
-        <span>{{ isOpen(2) ? '−' : '+' }}</span>
-      </button>
-      <div *ngIf="isOpen(2)" @fade class="px-6 pb-4">
-        <p class="text-white">Alpine.js is a minimal framework for composing behavior directly in your HTML. It's like jQuery for the modern web.</p>
-      </div>
-    </div>
-
-    <!-- FAQ Item 3 -->
-    <div class="mb-4 rounded-lg border bg-[#db2777]">
-      <button (click)="toggle(3)" class="flex w-full items-center justify-between px-6 py-4 text-left focus:outline-none">
-        <span class="text-lg font-semibold">How do I use Tailwind with Alpine.js?</span>
-        <span>{{ isOpen(3) ? '−' : '+' }}</span>
-      </button>
-      <div *ngIf="isOpen(3)" @fade class="px-6 pb-4">
-        <p class="text-white">You can use Tailwind CSS for styling and Alpine.js for interactivity. They work seamlessly together to create lightweight, dynamic components.</p>
+    <!-- Contact Support Section -->
+    <div class="text-center mt-12 lg:mt-16">
+      <div class="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-6 sm:p-8">
+        <h3 class="text-xl font-semibold text-white mb-2">Still have questions?</h3>
+        <p class="text-gray-400 mb-4">Can't find the answer you're looking for? Our support team is here to help.</p>
+        <a href="#" class="inline-flex items-center justify-center px-6 py-3 bg-gradient-to-r from-pink-600 to-pink-700 hover:from-pink-700 hover:to-pink-800 text-white font-medium rounded-full transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl">
+          Contact Support
+          <svg class="ml-2 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+          </svg>
+        </a>
       </div>
     </div>
   </div>
-</div>
+</section>

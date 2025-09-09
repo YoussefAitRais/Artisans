@@ -8,13 +8,13 @@ import { trigger, transition, style, animate } from '@angular/animations';
   imports: [CommonModule],
   templateUrl: './faq.component.html',
   animations: [
-    trigger('fadeSlide', [
+    trigger('fade', [
       transition(':enter', [
-        style({ height: '0', opacity: 0 }),
-        animate('150ms ease-out', style({ height: '*', opacity: 1 }))
+        style({ height: '0', opacity: 0, overflow: 'hidden' }),
+        animate('300ms ease-out', style({ height: '*', opacity: 1 }))
       ]),
       transition(':leave', [
-        animate('150ms ease-in', style({ height: '0', opacity: 0 }))
+        animate('300ms ease-in', style({ height: '0', opacity: 0, overflow: 'hidden' }))
       ])
     ])
   ]

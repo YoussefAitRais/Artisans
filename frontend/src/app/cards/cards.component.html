@@ -1,48 +1,150 @@
-<div data-hs-carousel='{
-  "slidesQty": { "xs": 1, "sm": 2, "md": 3, "lg": 4 },
-  "isAutoPlay": true,
-  "dotsItemClasses": "hs-carousel-active:bg-pink-600 hs-carousel-active:border-pink-600 size-3 border border-gray-400 rounded-full cursor-pointer"
-}' class="relative bg-gray-900 px-4 py-10 text-white">
+<!-- Services Carousel Component - Matching Landing Page Style -->
+<section class="bg-[#111827] text-white py-16 lg:py-20">
+  <div class="container mx-auto px-4 max-w-screen-xl">
+    <!-- Header Section -->
+    <div class="text-center mb-12 lg:mb-16">
+      <h2 class="text-3xl sm:text-4xl lg:text-5xl font-bold leading-tight mb-4">
+        🎯 Services Populaires
+      </h2>
+      <p class="text-gray-400 text-lg lg:text-xl max-w-2xl mx-auto">
+        Découvrez nos artisans les plus demandés pour tous vos projets
+      </p>
+    </div>
 
-  <h2 class="text-xl font-bold mb-6 text-center mx-auto">
-    Services Populaire
-  </h2>
-  <!-- Carousel Container -->
-  <div class="hs-carousel w-full overflow-hidden rounded-xl">
-    <div class="relative min-h-[260px] -mx-1">
-      <div class="hs-carousel-body absolute top-0 bottom-0 start-0 flex flex-nowrap opacity-0 transition-transform duration-700">
-
-        <!-- Loop: Service Cards -->
-        <div class="hs-carousel-slide px-1" *ngFor="let service of services">
-          <div class="relative h-[240px] w-full rounded-xl overflow-hidden shadow group">
-            <img [src]="service.image" [alt]="service.name" class="w-full h-full object-cover" />
-
-            <!-- Button over image -->
-            <div class="absolute bottom-3 left-1/2 transform -translate-x-1/2">
-              <div class="bg-pink-600 text-white text-sm font-semibold px-4 py-1 rounded-full shadow">
-                {{ service.name }}
+    <!-- Carousel Container -->
+    <div class="relative" [attr.data-current-slide]="currentSlide">
+      <!-- Main Carousel -->
+      <div 
+        class="overflow-hidden rounded-2xl shadow-2xl" 
+        #carouselContainer
+        (mouseenter)="onMouseEnter()"
+        (mouseleave)="onMouseLeave()">
+        <div 
+          class="flex transition-transform duration-700 ease-in-out"
+          [style.transform]="'translateX(-' + (currentSlide * slideWidth) + '%)'">
+          
+          <!-- Service Cards -->
+          <div 
+            *ngFor="let service of services; let i = index" 
+            class="flex-shrink-0 px-3"
+            [style.width]="slideWidth + '%'">
+            <div class="group relative h-72 sm:h-80 lg:h-96 w-full rounded-xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 cursor-pointer bg-white/5 hover:bg-white/10 backdrop-blur-sm border border-white/10">
+              <!-- Service Image -->
+              <div class="relative h-2/3 overflow-hidden">
+                <img 
+                  [src]="service.image" 
+                  [alt]="service.name" 
+                  class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" 
+                  loading="lazy" />
+                
+                <!-- Gradient Overlay -->
+                <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
+              </div>
+              
+              <!-- Content Section -->
+              <div class="p-6 h-1/3 flex flex-col justify-between">
+                <div>
+                  <h3 class="text-white font-bold text-lg lg:text-xl mb-2">{{ service.name }}</h3>
+                  <p class="text-gray-400 text-sm lg:text-base">{{ service.category || 'Artisan professionnel' }}</p>
+                </div>
+                
+                <!-- Stats and Action -->
+                <div class="mt-4">
+                  <div class="flex items-center justify-between mb-3">
+                    <div class="flex items-center space-x-2 text-gray-300 text-sm">
+                      <span class="flex items-center space-x-1">
+                        <span class="text-yellow-400">⭐</span>
+                        <span>4.8</span>
+                      </span>
+                      <span class="text-gray-500">•</span>
+                      <span>{{ getServiceProjectCount(service) }}+ projets</span>
+                    </div>
+                  </div>
+                  
+                  <!-- Action Button -->
+                  <button class="w-full bg-pink-600 hover:bg-pink-700 text-white text-sm font-semibold py-3 px-4 rounded-full transition-all duration-200 transform hover:scale-105 shadow-lg">
+                    Voir les artisans
+                  </button>
+                </div>
               </div>
             </div>
           </div>
         </div>
+      </div>
 
+      <!-- Navigation Arrows -->
+      <button 
+        (click)="previousSlide()" 
+        class="absolute left-4 top-1/2 transform -translate-y-1/2 w-12 h-12 bg-white/10 hover:bg-white/20 text-white rounded-full flex items-center justify-center transition-all duration-200 hover:scale-110 shadow-lg backdrop-blur-sm z-20 group">
+        <svg class="w-6 h-6 transition-transform duration-200 group-hover:-translate-x-0.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"></path>
+        </svg>
+      </button>
+
+      <button 
+        (click)="nextSlide()" 
+        class="absolute right-4 top-1/2 transform -translate-y-1/2 w-12 h-12 bg-white/10 hover:bg-white/20 text-white rounded-full flex items-center justify-center transition-all duration-200 hover:scale-110 shadow-lg backdrop-blur-sm z-20 group">
+        <svg class="w-6 h-6 transition-transform duration-200 group-hover:translate-x-0.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"></path>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Pagination Dots -->
+    <div class="flex justify-center mt-8 lg:mt-12 space-x-3">
+      <button 
+        *ngFor="let slide of getTotalSlides(); let i = index" 
+        (click)="goToSlide(i)"
+        [class]="'w-3 h-3 rounded-full transition-all duration-300 ' + 
+                (currentSlide === i 
+                  ? 'bg-pink-600 scale-125' 
+                  : 'bg-gray-500 hover:bg-gray-400')"
+        [attr.aria-label]="'Aller au slide ' + (i + 1)">
+      </button>
+    </div>
+
+    <!-- Auto-play Timer Controls Hidden for Professional Appearance -->
+    <!-- Timer and auto-play status indicators are intentionally hidden -->
+
+    <!-- Features Section - Matching Landing Page Style -->
+    <div class="mt-16 lg:mt-20">
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-8 lg:gap-12">
+        <div class="flex items-center gap-3 text-center sm:text-left">
+          <div class="w-12 h-12 bg-blue-500/20 rounded-full flex items-center justify-center flex-shrink-0">
+            <svg class="w-6 h-6 text-blue-400" fill="currentColor" viewBox="0 0 20 20">
+              <path d="M16.707 5.293a1 1 0 00-1.414 0L8 12.586 4.707 9.293a1 1 0 00-1.414 1.414l4 4a1 1 0 001.414 0l8-8a1 1 0 000-1.414z" />
+            </svg>
+          </div>
+          <div>
+            <h3 class="font-semibold text-white mb-1">Artisans Vérifiés</h3>
+            <p class="text-gray-400 text-sm">Tous nos artisans sont certifiés et vérifiés</p>
+          </div>
+        </div>
+        
+        <div class="flex items-center gap-3 text-center sm:text-left">
+          <div class="w-12 h-12 bg-green-500/20 rounded-full flex items-center justify-center flex-shrink-0">
+            <svg class="w-6 h-6 text-green-400" fill="currentColor" viewBox="0 0 20 20">
+              <path d="M16.707 5.293a1 1 0 00-1.414 0L8 12.586 4.707 9.293a1 1 0 00-1.414 1.414l4 4a1 1 0 001.414 0l8-8a1 1 0 000-1.414z" />
+            </svg>
+          </div>
+          <div>
+            <h3 class="font-semibold text-white mb-1">Devis Gratuits</h3>
+            <p class="text-gray-400 text-sm">Recevez plusieurs devis sans engagement</p>
+          </div>
+        </div>
+        
+        <div class="flex items-center gap-3 text-center sm:text-left">
+          <div class="w-12 h-12 bg-purple-500/20 rounded-full flex items-center justify-center flex-shrink-0">
+            <svg class="w-6 h-6 text-purple-400" fill="currentColor" viewBox="0 0 20 20">
+              <path d="M16.707 5.293a1 1 0 00-1.414 0L8 12.586 4.707 9.293a1 1 0 00-1.414 1.414l4 4a1 1 0 001.414 0l8-8a1 1 0 000-1.414z" />
+            </svg>
+          </div>
+          <div>
+            <h3 class="font-semibold text-white mb-1">Support 24/7</h3>
+            <p class="text-gray-400 text-sm">Une équipe dédiée pour vous accompagner</p>
+          </div>
+        </div>
       </div>
     </div>
   </div>
-
-  <!-- Arrows -->
-  <button type="button" class="hs-carousel-prev absolute inset-y-0 start-0 flex items-center justify-center w-10 text-white bg-black/30 hover:bg-black/50 rounded-s-lg z-10">
-    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-      <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"></path>
-    </svg>
-  </button>
-
-  <button type="button" class="hs-carousel-next absolute inset-y-0 end-0 flex items-center justify-center w-10 text-white bg-black/30 hover:bg-black/50 rounded-e-lg z-10">
-    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-      <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"></path>
-    </svg>
-  </button>
-
-  <!-- Dots -->
-  <div class="hs-carousel-pagination flex justify-center mt-5 gap-x-2"></div>
-</div>
+</section>

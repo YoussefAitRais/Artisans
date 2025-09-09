@@ -1,5 +1,6 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, Inject, PLATFORM_ID } from '@angular/core';
 import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { isPlatformBrowser } from '@angular/common';
 import { ClientApi, ClientResponse } from '../../services/api/client-api.service';
 
 @Component({
@@ -13,7 +14,11 @@ export class ClientDashboardComponent implements OnInit {
   userEmail = '';
   sidebarOpen = false;
 
-  constructor(private router: Router, private clientApi: ClientApi) {}
+  constructor(
+    private router: Router, 
+    private clientApi: ClientApi,
+    @Inject(PLATFORM_ID) private platformId: Object
+  ) {}
 
   ngOnInit(): void {
     this.clientApi.getMe().subscribe({
@@ -28,8 +33,11 @@ export class ClientDashboardComponent implements OnInit {
   toggleSidebar() { this.sidebarOpen = !this.sidebarOpen; }
 
   logout() {
-    localStorage.removeItem('token');
-    localStorage.removeItem('role');
+    // Check if we're in browser environment before accessing localStorage
+    if (isPlatformBrowser(this.platformId)) {
+      localStorage.removeItem('token');
+      localStorage.removeItem('role');
+    }
     this.router.navigateByUrl('/login');
   }
 }
