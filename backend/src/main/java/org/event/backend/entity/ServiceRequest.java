@@ -5,7 +5,7 @@ import java.time.Instant;
 import java.time.LocalDate;
 
 /**
- * A client-created request for an artisan service (devis).
+ * A client-created request for an artisan service (service request).
  */
 @Entity
 @Table(name = "requests", indexes = {

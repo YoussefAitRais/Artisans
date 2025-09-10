@@ -18,6 +18,9 @@ export class CategoriesComponent implements OnInit {
   loading = false;
   error = '';
   success = '';
+  
+  // Precomputed random artisan counts to avoid non-deterministic template calls
+  private artisanCounts: Map<number, number> = new Map();
 
   // Category images mapping for better visual representation
   private categoryImages: { [key: string]: string } = {
@@ -65,6 +68,9 @@ export class CategoriesComponent implements OnInit {
       .subscribe({
         next: (response) => {
           this.items = response?.content ?? [];
+          // Precompute artisan counts for each category to avoid template issues
+          this.precomputeArtisanCounts();
+          
           if (this.items.length > 0) {
             this.success = `Found ${this.items.length} categories`;
             setTimeout(() => this.success = '', 3000); // Clear success message after 3 seconds
@@ -78,6 +84,42 @@ export class CategoriesComponent implements OnInit {
           this.loading = false;
         }
       });
+  }
+  
+  /**
+   * Precompute random artisan counts for all categories to ensure stable values
+   */
+  private precomputeArtisanCounts(): void {
+    this.artisanCounts.clear();
+    this.items.forEach(category => {
+      // Generate a stable random number based on category ID and name
+      const seed = this.generateSeed(category.id, category.name);
+      const count = this.generateStableRandom(seed, 10, 59); // Random between 10-59
+      this.artisanCounts.set(category.id, count);
+    });
+  }
+  
+  /**
+   * Generate a stable seed from category ID and name
+   */
+  private generateSeed(id: number, name: string): number {
+    let hash = 0;
+    const str = `${id}-${name}`;
+    for (let i = 0; i < str.length; i++) {
+      const char = str.charCodeAt(i);
+      hash = ((hash << 5) - hash) + char;
+      hash = hash & hash; // Convert to 32-bit integer
+    }
+    return Math.abs(hash);
+  }
+  
+  /**
+   * Generate a stable "random" number within a range using a seed
+   */
+  private generateStableRandom(seed: number, min: number, max: number): number {
+    const x = Math.sin(seed) * 10000;
+    const random = x - Math.floor(x);
+    return Math.floor(random * (max - min + 1)) + min;
   }
 
   /**
@@ -125,9 +167,9 @@ export class CategoriesComponent implements OnInit {
   }
 
   /**
-   * Generate random artisan count for display
+   * Get precomputed artisan count for a category (stable across change detection cycles)
    */
-  getRandomArtisanCount(): number {
-    return Math.floor(Math.random() * 50) + 10; // Random number between 10-59
+  getArtisanCount(categoryId: number): number {
+    return this.artisanCounts.get(categoryId) || 0;
   }
 }

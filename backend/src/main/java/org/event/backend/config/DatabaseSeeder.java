@@ -11,78 +11,70 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 /**
- * Database Seeder for Admin Users
+ * Database initialization service for seeding administrative users.
  * 
- * Clean Code Example for Beginners:
+ * This component automatically creates default admin users during application startup
+ * following Spring Boot's CommandLineRunner pattern. It ensures idempotent operations
+ * by checking for existing data before creation.
  * 
- * This class demonstrates:
- * - Automatic data seeding on application startup
- * - Configuration-driven admin creation
- * - Safe password handling with encryption
- * - Proper error handling and logging
- * - Check-before-create pattern to avoid duplicates
- * 
- * How it works:
- * 1. Runs automatically when Spring Boot starts up
- * 2. Checks if admin user already exists
- * 3. Creates admin user if not found
- * 4. Uses encrypted passwords for security
- * 5. Logs the process for monitoring
+ * @author Artisan Platform Team
+ * @version 1.0
  */
 @Component
 public class DatabaseSeeder implements CommandLineRunner {
 
     private static final Logger logger = LoggerFactory.getLogger(DatabaseSeeder.class);
-
-    // === DEPENDENCIES ===
+    private static final int MIN_PASSWORD_LENGTH = 6;
+    
+    // ============ DEPENDENCIES ============
     
     private final UtilisateurRepository utilisateurRepository;
     private final PasswordEncoder passwordEncoder;
     
-    // === CONFIGURATION VALUES ===
+    // ============ CONFIGURATION PROPERTIES ============
     
     /**
-     * Admin email from application properties
-     * Default: admin@artisan.com if not specified
+     * Admin email address for the default administrator account.
+     * Configurable via application properties: app.admin.email
      */
     @Value("${app.admin.email:admin@artisan.com}")
     private String adminEmail;
     
     /**
-     * Admin password from application properties
-     * Default: admin123 if not specified
+     * Admin password for the default administrator account.
+     * Configurable via application properties: app.admin.password
      */
     @Value("${app.admin.password:admin123}")
     private String adminPassword;
     
     /**
-     * Admin first name from application properties
-     * Default: Admin if not specified
+     * Admin first name for the default administrator account.
+     * Configurable via application properties: app.admin.firstname
      */
     @Value("${app.admin.firstname:Admin}")
     private String adminFirstName;
     
     /**
-     * Admin last name from application properties
-     * Default: System if not specified
+     * Admin last name for the default administrator account.
+     * Configurable via application properties: app.admin.lastname
      */
     @Value("${app.admin.lastname:System}")
     private String adminLastName;
     
     /**
-     * Whether admin seeding is enabled
-     * Default: true if not specified
+     * Flag to enable or disable admin seeding.
+     * Configurable via application properties: app.admin.seed.enabled
      */
     @Value("${app.admin.seed.enabled:true}")
     private boolean seedingEnabled;
 
-    // === CONSTRUCTOR ===
+    // ============ CONSTRUCTOR ============
     
     /**
-     * Constructor with dependency injection
+     * Constructor for dependency injection.
      * 
-     * @param utilisateurRepository - Repository for user operations
-     * @param passwordEncoder - Service for password encryption
+     * @param utilisateurRepository repository for user data access
+     * @param passwordEncoder service for secure password hashing
      */
     public DatabaseSeeder(UtilisateurRepository utilisateurRepository, 
                          PasswordEncoder passwordEncoder) {
@@ -90,61 +82,72 @@ public class DatabaseSeeder implements CommandLineRunner {
         this.passwordEncoder = passwordEncoder;
     }
 
-    // === MAIN SEEDING METHOD ===
+    // ============ MAIN EXECUTION METHOD ============
     
     /**
-     * Main method that runs on application startup
+     * Executes the database seeding process during application startup.
      * 
-     * Clean Code Approach:
+     * This method follows a simple, linear flow:
      * 1. Check if seeding is enabled
      * 2. Validate configuration
-     * 3. Check if admin already exists
-     * 4. Create admin if needed
-     * 5. Log results for monitoring
+     * 3. Create admin user if needed
+     * 
+     * @param args command line arguments (unused)
      */
     @Override
-    public void run(String... args) throws Exception {
-        logger.info("🌱 Starting Database Seeding Process...");
+    public void run(String... args) {
+        logger.info("Starting database seeding process...");
         
-        // Step 1: Check if seeding is enabled
-        if (!seedingEnabled) {
-            logger.info("⏭️ Admin seeding is disabled in configuration");
+        if (!isSeedingEnabled()) {
             return;
         }
         
-        // Step 2: Validate configuration
-        if (!isValidConfiguration()) {
-            logger.error("❌ Invalid admin configuration - skipping seeding");
+        if (!hasValidConfiguration()) {
+            logger.error("Invalid admin configuration - seeding aborted");
             return;
         }
         
         try {
-            // Step 3: Check and create admin
-            createAdminIfNotExists();
-            
-            logger.info("✅ Database seeding completed successfully");
-            
+            createAdminUserIfNeeded();
+            logger.info("Database seeding completed successfully");
         } catch (Exception e) {
-            logger.error("❌ Error during database seeding: {}", e.getMessage(), e);
-            // Don't re-throw - let application continue even if seeding fails
+            logger.error("Database seeding failed: {}", e.getMessage(), e);
+            // Continue application startup even if seeding fails
         }
     }
 
-    // === HELPER METHODS ===
+    // ============ PRIVATE HELPER METHODS ============
     
     /**
-     * Validates the admin configuration from properties
+     * Checks if database seeding is enabled in configuration.
+     * 
+     * @return true if seeding is enabled, false otherwise
+     */
+    private boolean isSeedingEnabled() {
+        if (!seedingEnabled) {
+            logger.info("Admin seeding is disabled in configuration");
+            return false;
+        }
+        return true;
+    }
+    
+    /**
+     * Validates all required configuration properties.
      * 
      * @return true if configuration is valid, false otherwise
      */
-    private boolean isValidConfiguration() {
-        if (adminEmail == null || adminEmail.trim().isEmpty()) {
+    private boolean hasValidConfiguration() {
+        return isEmailValid() && isPasswordValid();
+    }
+    
+    /**
+     * Validates the admin email configuration.
+     * 
+     * @return true if email is valid, false otherwise
+     */
+    private boolean isEmailValid() {
+        if (isBlank(adminEmail)) {
             logger.error("Admin email is not configured");
-            return false;
-        }
-        
-        if (adminPassword == null || adminPassword.trim().length() < 6) {
-            logger.error("Admin password is not configured or too short (minimum 6 characters)");
             return false;
         }
         
@@ -157,37 +160,99 @@ public class DatabaseSeeder implements CommandLineRunner {
     }
     
     /**
-     * Creates admin user if one doesn't already exist
+     * Validates the admin password configuration.
      * 
-     * Clean Code Principle: One method, one responsibility
+     * @return true if password is valid, false otherwise
      */
-    private void createAdminIfNotExists() {
-        logger.info("🔍 Checking if admin user exists with email: {}", adminEmail);
+    private boolean isPasswordValid() {
+        if (isBlank(adminPassword) || adminPassword.trim().length() < MIN_PASSWORD_LENGTH) {
+            logger.error("Admin password must be at least {} characters long", MIN_PASSWORD_LENGTH);
+            return false;
+        }
         
-        // Check if admin already exists
-        if (utilisateurRepository.existsByEmail(adminEmail)) {
-            logger.info("👤 Admin user already exists - skipping creation");
+        return true;
+    }
+    
+    /**
+     * Creates an admin user if one doesn't already exist.
+     */
+    private void createAdminUserIfNeeded() {
+        if (adminUserAlreadyExists()) {
+            logger.info("Admin user already exists - skipping creation");
             return;
         }
         
-        // Create new admin user
-        logger.info("👨‍💼 Creating new admin user...");
+        createNewAdminUser();
+    }
+    
+    /**
+     * Checks if an admin user already exists with the configured email.
+     * 
+     * @return true if admin exists, false otherwise
+     */
+    private boolean adminUserAlreadyExists() {
+        boolean exists = utilisateurRepository.existsByEmail(adminEmail);
+        if (exists) {
+            logger.info("Found existing admin user: {}", adminEmail);
+        }
+        return exists;
+    }
+    
+    /**
+     * Creates and saves a new admin user to the database.
+     */
+    private void createNewAdminUser() {
+        logger.info("Creating new admin user: {}", adminEmail);
         
-        Admin admin = new Admin(
-            adminLastName.trim(),
-            adminFirstName.trim(),
-            adminEmail.trim().toLowerCase(),
+        Admin admin = buildAdminUser();
+        utilisateurRepository.save(admin);
+        
+        logAdminCreationSuccess();
+    }
+    
+    /**
+     * Builds a new Admin entity with the configured properties.
+     * 
+     * @return configured Admin entity
+     */
+    private Admin buildAdminUser() {
+        return new Admin(
+            cleanString(adminLastName),
+            cleanString(adminFirstName),
+            cleanString(adminEmail).toLowerCase(),
             passwordEncoder.encode(adminPassword),
             Role.ADMIN
         );
-        
-        // Save to database
-        utilisateurRepository.save(admin);
-        
-        logger.info("✅ Admin user created successfully:");
-        logger.info("   📧 Email: {}", adminEmail);
-        logger.info("   👤 Name: {} {}", adminFirstName, adminLastName);
-        logger.info("   🔐 Password: [ENCRYPTED]");
-        logger.info("   🎭 Role: ADMIN");
+    }
+    
+    /**
+     * Logs successful admin user creation with details.
+     */
+    private void logAdminCreationSuccess() {
+        logger.info("Admin user created successfully:");
+        logger.info("  Email: {}", adminEmail);
+        logger.info("  Name: {} {}", adminFirstName, adminLastName);
+        logger.info("  Role: ADMIN");
+        logger.info("  Password: [ENCRYPTED]");
+    }
+    
+    /**
+     * Checks if a string is null, empty, or contains only whitespace.
+     * 
+     * @param str the string to check
+     * @return true if the string is blank, false otherwise
+     */
+    private boolean isBlank(String str) {
+        return str == null || str.trim().isEmpty();
+    }
+    
+    /**
+     * Cleans a string by trimming whitespace and handling null values.
+     * 
+     * @param str the string to clean
+     * @return cleaned string or empty string if input was null
+     */
+    private String cleanString(String str) {
+        return str != null ? str.trim() : "";
     }
 }

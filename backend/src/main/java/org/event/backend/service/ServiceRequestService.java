@@ -17,7 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Business rules for client requests (devis).
+ * Business rules for client requests (service requests).
  */
 @Service
 public class ServiceRequestService {

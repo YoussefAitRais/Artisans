@@ -37,6 +37,6 @@ public class ArtisanInboxController {
         String filter = "ALL".equals(normalized) ? null : normalized;
 
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
-        return ResponseEntity.ok(inboxService.listInbox(artisan, pageable, filter, q));
+        return ResponseEntity.ok(inboxService.getArtisanInbox(artisan, pageable, filter, q));
     }
 }

@@ -18,6 +18,19 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+/**
+ * REST Controller for managing artisan-related operations.
+ * 
+ * Provides endpoints for:
+ * - Public artisan search and profile viewing
+ * - Artisan self-service operations (profile management)
+ * - Administrative artisan management
+ * - Artisan inbox and review management
+ * 
+ * @author Artisan Platform Team
+ * @version 1.0
+ */
+
 @RestController
 public class ArtisanController {
 
@@ -25,6 +38,13 @@ public class ArtisanController {
     private final ArtisanInboxService inboxService;
     private final ReviewService reviewService;
 
+    /**
+     * Constructor for dependency injection.
+     * 
+     * @param artisanService service for artisan operations
+     * @param inboxService service for artisan inbox management
+     * @param reviewService service for review management
+     */
     public ArtisanController(ArtisanService artisanService,
                              ArtisanInboxService inboxService,
                              ReviewService reviewService) {
@@ -33,92 +53,200 @@ public class ArtisanController {
         this.reviewService = reviewService;
     }
 
-    // ---------- Public ----------
+    // ============ PUBLIC ENDPOINTS ============
+    
+    /**
+     * Searches for artisans with optional filtering.
+     * 
+     * @param metier profession/trade filter (optional)
+     * @param localisation location filter (optional)
+     * @param query general search query (optional)
+     * @param pageable pagination parameters
+     * @return paginated list of matching artisans
+     */
     @GetMapping("/api/artisans")
-    public ResponseEntity<Page<ArtisanResponse>> search(
+    public ResponseEntity<Page<ArtisanResponse>> searchArtisans(
             @RequestParam(required = false) String metier,
             @RequestParam(required = false) String localisation,
             @RequestParam(required = false, name = "q") String query,
             Pageable pageable
     ) {
-        return ResponseEntity.ok(artisanService.search(metier, localisation, query, pageable));
+        Page<ArtisanResponse> artisans = artisanService.searchArtisans(metier, localisation, query, pageable);
+        return ResponseEntity.ok(artisans);
     }
 
+    /**
+     * Retrieves a specific artisan's public profile.
+     * 
+     * @param id the artisan's unique identifier
+     * @return the artisan's profile information
+     */
     @GetMapping("/api/artisans/{id}")
-    public ResponseEntity<ArtisanResponse> getById(@PathVariable Long id) {
-        return ResponseEntity.ok(artisanService.getById(id));
+    public ResponseEntity<ArtisanResponse> getArtisanById(@PathVariable Long id) {
+        ArtisanResponse artisan = artisanService.getArtisanById(id);
+        return ResponseEntity.ok(artisan);
     }
 
-    // ---------- Self (ROLE_ARTISAN) ----------
+    // ============ ARTISAN SELF-SERVICE ENDPOINTS ============
+    
+    /**
+     * Retrieves the current artisan's own profile.
+     * 
+     * @param currentUser the authenticated artisan user
+     * @return the artisan's profile information
+     */
     @GetMapping("/api/artisan/me")
     @PreAuthorize("hasRole('ARTISAN')")
-    public ResponseEntity<ArtisanResponse> me(@AuthenticationPrincipal Utilisateur current) {
-        return ResponseEntity.ok(artisanService.getMe(current));
+    public ResponseEntity<ArtisanResponse> getCurrentArtisanProfile(@AuthenticationPrincipal Utilisateur currentUser) {
+        ArtisanResponse profile = artisanService.getCurrentArtisanProfile(currentUser);
+        return ResponseEntity.ok(profile);
     }
 
+    /**
+     * Updates the current artisan's profile information.
+     * 
+     * @param currentUser the authenticated artisan user
+     * @param updateRequest the profile update data
+     * @return the updated artisan profile
+     */
     @PutMapping("/api/artisan/me")
     @PreAuthorize("hasRole('ARTISAN')")
-    public ResponseEntity<ArtisanResponse> updateMe(@AuthenticationPrincipal Utilisateur current,
-                                                    @Valid @RequestBody ArtisanUpdateRequest req) {
-        return ResponseEntity.ok(artisanService.updateMe(current, req));
+    public ResponseEntity<ArtisanResponse> updateCurrentArtisanProfile(
+            @AuthenticationPrincipal Utilisateur currentUser,
+            @Valid @RequestBody ArtisanUpdateRequest updateRequest) {
+        ArtisanResponse updatedProfile = artisanService.updateCurrentArtisanProfile(currentUser, updateRequest);
+        return ResponseEntity.ok(updatedProfile);
     }
 
-    // ---------- Inbox engagement ----------
-    // This version matches when page/size are NOT explicitly present
-    @GetMapping(value = "/api/artisan/inbox", params = {"!page","!size"})
+    // ============ ARTISAN INBOX AND REVIEW ENDPOINTS ============
+    
+    /**
+     * Retrieves the artisan's inbox with optional filtering.
+     * Note: This endpoint matches when page/size parameters are NOT explicitly present.
+     * 
+     * @param currentUser the authenticated artisan user
+     * @param pageable pagination parameters
+     * @param status engagement status filter (defaults to ALL)
+     * @param query search query for filtering inbox items
+     * @return paginated list of inbox items
+     */
+    @GetMapping(value = "/api/artisan/inbox", params = {"!page", "!size"})
     @PreAuthorize("hasRole('ARTISAN')")
-    public ResponseEntity<Page<ArtisanInboxItemResponse>> inbox(
-            @AuthenticationPrincipal Utilisateur current,
+    public ResponseEntity<Page<ArtisanInboxItemResponse>> getArtisanInbox(
+            @AuthenticationPrincipal Utilisateur currentUser,
             Pageable pageable,
             @RequestParam(defaultValue = "ALL") String status,
-            @RequestParam(required = false) String q
+            @RequestParam(required = false) String query
     ) {
-        Artisan me = asArtisan(current);
-        String normalized = status == null ? null : status.trim().toUpperCase();
-        String filter = "ALL".equals(normalized) ? null : normalized;
-        return ResponseEntity.ok(inboxService.listInbox(me, pageable, filter, q));
+        Artisan artisan = validateAndGetArtisan(currentUser);
+        String statusFilter = normalizeStatusFilter(status);
+        
+        Page<ArtisanInboxItemResponse> inboxItems = inboxService.getArtisanInbox(artisan, pageable, statusFilter, query);
+        return ResponseEntity.ok(inboxItems);
     }
 
+    /**
+     * Retrieves reviews for the current artisan.
+     * 
+     * @param currentUser the authenticated artisan user
+     * @param pageable pagination parameters
+     * @return paginated list of reviews for the artisan
+     */
     @GetMapping("/api/artisan/reviews")
     @PreAuthorize("hasRole('ARTISAN')")
-    public ResponseEntity<Page<ReviewResponse>> myReviewsAsArtisan(
-            @AuthenticationPrincipal Utilisateur current, Pageable pageable) {
-        Artisan me = asArtisan(current);
-        return ResponseEntity.ok(reviewService.getReviewsForArtisan(me.getId(), pageable));
+    public ResponseEntity<Page<ReviewResponse>> getArtisanReviews(
+            @AuthenticationPrincipal Utilisateur currentUser, 
+            Pageable pageable) {
+        Artisan artisan = validateAndGetArtisan(currentUser);
+        Page<ReviewResponse> reviews = reviewService.getReviewsForArtisan(artisan.getId(), pageable);
+        return ResponseEntity.ok(reviews);
     }
 
-    // ---------- Admin (ROLE_ADMIN) ----------
+    // ============ ADMINISTRATIVE ENDPOINTS ============
+    
+    /**
+     * Retrieves all artisans for administrative purposes.
+     * 
+     * @param pageable pagination parameters
+     * @return paginated list of all artisans
+     */
     @GetMapping("/api/admin/artisans")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Page<ArtisanResponse>> adminList(Pageable pageable) {
-        return ResponseEntity.ok(artisanService.adminList(pageable));
+    public ResponseEntity<Page<ArtisanResponse>> getAllArtisansForAdmin(Pageable pageable) {
+        Page<ArtisanResponse> artisans = artisanService.getAllArtisansForAdmin(pageable);
+        return ResponseEntity.ok(artisans);
     }
 
+    /**
+     * Retrieves a specific artisan for administrative purposes.
+     * 
+     * @param id the artisan's unique identifier
+     * @return the artisan's profile information
+     */
     @GetMapping("/api/admin/artisans/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<ArtisanResponse> adminGet(@PathVariable Long id) {
-        return ResponseEntity.ok(artisanService.adminGet(id));
+    public ResponseEntity<ArtisanResponse> getArtisanForAdmin(@PathVariable Long id) {
+        ArtisanResponse artisan = artisanService.getArtisanForAdmin(id);
+        return ResponseEntity.ok(artisan);
     }
 
+    /**
+     * Updates an artisan's profile as an administrator.
+     * 
+     * @param id the artisan's unique identifier
+     * @param updateRequest the profile update data
+     * @return the updated artisan profile
+     */
     @PutMapping("/api/admin/artisans/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<ArtisanResponse> adminUpdate(@PathVariable Long id,
-                                                       @Valid @RequestBody ArtisanUpdateRequest req) {
-        return ResponseEntity.ok(artisanService.adminUpdate(id, req));
+    public ResponseEntity<ArtisanResponse> updateArtisanAsAdmin(
+            @PathVariable Long id,
+            @Valid @RequestBody ArtisanUpdateRequest updateRequest) {
+        ArtisanResponse updatedArtisan = artisanService.updateArtisanAsAdmin(id, updateRequest);
+        return ResponseEntity.ok(updatedArtisan);
     }
 
+    /**
+     * Deletes an artisan profile as an administrator.
+     * 
+     * @param id the artisan's unique identifier
+     * @return empty response with 204 No Content status
+     */
     @DeleteMapping("/api/admin/artisans/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Void> adminDelete(@PathVariable Long id) {
-        artisanService.adminDelete(id);
+    public ResponseEntity<Void> deleteArtisanAsAdmin(@PathVariable Long id) {
+        artisanService.deleteArtisanAsAdmin(id);
         return ResponseEntity.noContent().build();
     }
 
-    // ==== helpers ====
-    private Artisan asArtisan(Utilisateur current) {
-        if (!(current instanceof Artisan a)) {
-            throw new AccessDeniedException("USER_IS_NOT_ARTISAN");
+    // ============ PRIVATE HELPER METHODS ============
+    
+    /**
+     * Validates that the current user is an artisan and returns the artisan entity.
+     * 
+     * @param currentUser the authenticated user
+     * @return the validated artisan entity
+     * @throws AccessDeniedException if the user is not an artisan
+     */
+    private Artisan validateAndGetArtisan(Utilisateur currentUser) {
+        if (!(currentUser instanceof Artisan artisan)) {
+            throw new AccessDeniedException("Access denied: User is not an artisan");
         }
-        return a;
+        return artisan;
+    }
+    
+    /**
+     * Normalizes status filter by converting to uppercase and handling "ALL" case.
+     * 
+     * @param status the raw status filter
+     * @return normalized status filter (null for "ALL", uppercase otherwise)
+     */
+    private String normalizeStatusFilter(String status) {
+        if (status == null) {
+            return null;
+        }
+        
+        String normalized = status.trim().toUpperCase();
+        return "ALL".equals(normalized) ? null : normalized;
     }
 }

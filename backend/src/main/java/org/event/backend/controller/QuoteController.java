@@ -15,7 +15,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 /**
- * Endpoints for Quotes (devis).
+ * Endpoints for Quotes (quotes).
  *
  * Security expectations:
  * - Artisan-only: create/update/delete own quotes
@@ -34,7 +34,7 @@ public class QuoteController {
                                                          @PathVariable Long requestId,
                                                          @Valid @RequestBody QuoteCreateRequest req) {
         Artisan artisan = (Artisan) current;
-        return ResponseEntity.ok(quoteService.createAsArtisan(artisan, requestId, req));
+        return ResponseEntity.ok(quoteService.createQuoteAsArtisan(artisan, requestId, req));
     }
 
     @PutMapping("/api/quotes/{id}")
@@ -42,14 +42,14 @@ public class QuoteController {
                                                          @PathVariable Long id,
                                                          @Valid @RequestBody QuoteUpdateRequest req) {
         Artisan artisan = (Artisan) current;
-        return ResponseEntity.ok(quoteService.updateAsArtisan(artisan, id, req));
+        return ResponseEntity.ok(quoteService.updateQuoteAsArtisan(artisan, id, req));
     }
 
     @DeleteMapping("/api/quotes/{id}")
     public ResponseEntity<Void> deleteAsArtisan(@AuthenticationPrincipal Utilisateur current,
                                                 @PathVariable Long id) {
         Artisan artisan = (Artisan) current;
-        quoteService.deleteAsArtisan(artisan, id);
+        quoteService.deleteQuoteAsArtisan(artisan, id);
         return ResponseEntity.noContent().build();
     }
 
@@ -57,7 +57,7 @@ public class QuoteController {
     public ResponseEntity<Page<QuoteResponse>> myQuotesAsArtisan(@AuthenticationPrincipal Utilisateur current,
                                                                  Pageable pageable) {
         Artisan artisan = (Artisan) current;
-        return ResponseEntity.ok(quoteService.myQuotesAsArtisan(artisan, pageable));
+        return ResponseEntity.ok(quoteService.getArtisanQuotes(artisan, pageable));
     }
 
     // ---------- Client ----------
@@ -66,7 +66,7 @@ public class QuoteController {
                                                                       @PathVariable Long requestId,
                                                                       Pageable pageable) {
         Client client = (Client) current;
-        return ResponseEntity.ok(quoteService.listQuotesForMyRequest(client, requestId, pageable));
+        return ResponseEntity.ok(quoteService.getQuotesForClientRequest(client, requestId, pageable));
     }
 
     @PostMapping("/api/quotes/{id}/accept")
@@ -79,17 +79,17 @@ public class QuoteController {
     // ---------- Admin ----------
     @GetMapping("/api/admin/quotes/by-request/{requestId}")
     public ResponseEntity<Page<QuoteResponse>> adminListByRequest(@PathVariable Long requestId, Pageable pageable) {
-        return ResponseEntity.ok(quoteService.adminListByRequest(requestId, pageable));
+        return ResponseEntity.ok(quoteService.getQuotesByRequestForAdmin(requestId, pageable));
     }
 
     @GetMapping("/api/admin/quotes/by-artisan/{artisanId}")
     public ResponseEntity<Page<QuoteResponse>> adminListByArtisan(@PathVariable Long artisanId, Pageable pageable) {
-        return ResponseEntity.ok(quoteService.adminListByArtisan(artisanId, pageable));
+        return ResponseEntity.ok(quoteService.getQuotesByArtisanForAdmin(artisanId, pageable));
     }
 
     @DeleteMapping("/api/admin/quotes/{id}")
     public ResponseEntity<Void> adminDelete(@PathVariable Long id) {
-        quoteService.adminDelete(id);
+        quoteService.deleteQuoteAsAdmin(id);
         return ResponseEntity.noContent().build();
     }
 }
