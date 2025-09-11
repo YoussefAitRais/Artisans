@@ -2,7 +2,6 @@ package org.event.backend.dto.messaging;
 
 import jakarta.validation.constraints.NotBlank;
 
-/** Payload to send a message. */
 public class MessageCreateRequest {
     @NotBlank
     private String body;

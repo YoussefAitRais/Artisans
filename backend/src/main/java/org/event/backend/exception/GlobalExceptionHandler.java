@@ -26,18 +26,13 @@ import org.springframework.web.multipart.MaxUploadSizeExceededException;
 
 import java.util.NoSuchElementException;
 
-/**
- * Central place to translate exceptions into consistent JSON responses.
- * Note: 401/403 from Spring Security filters may require custom entry points/handlers
- * in SecurityConfig (exceptionHandling). This handler still helps for @PreAuthorize and others.
- */
+
 @RestControllerAdvice
 @Order(Ordered.HIGHEST_PRECEDENCE)
 public class GlobalExceptionHandler {
 
     // ========== Validation Errors ==========
 
-    /** Bean validation on @RequestBody DTOs */
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ApiError> handleMethodArgumentNotValid(MethodArgumentNotValidException ex,
                                                                  HttpServletRequest req) {
@@ -51,7 +46,6 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(status).body(api);
     }
 
-    /** Bean validation on query params / path variables */
     @ExceptionHandler(ConstraintViolationException.class)
     public ResponseEntity<ApiError> handleConstraintViolation(ConstraintViolationException ex,
                                                               HttpServletRequest req) {
@@ -104,7 +98,6 @@ public class GlobalExceptionHandler {
 
     // ========== Domain & Repository Errors ==========
 
-    /** When service throws explicit not-found (preferred) */
     @ExceptionHandler(NoSuchElementException.class)
     public ResponseEntity<ApiError> handleNoSuchElement(NoSuchElementException ex, HttpServletRequest req) {
         HttpStatus status = HttpStatus.NOT_FOUND;
@@ -112,7 +105,6 @@ public class GlobalExceptionHandler {
                 .body(base(status, nn(ex.getMessage(), "Resource not found"), req));
     }
 
-    /** For bad inputs / illegal state in business logic */
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<ApiError> handleIllegalArgument(IllegalArgumentException ex, HttpServletRequest req) {
         HttpStatus status = HttpStatus.BAD_REQUEST;
@@ -120,7 +112,6 @@ public class GlobalExceptionHandler {
                 .body(base(status, nn(ex.getMessage(), "Bad request"), req));
     }
 
-    /** Unique constraints / FK violations, etc. */
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ResponseEntity<ApiError> handleDataIntegrity(DataIntegrityViolationException ex, HttpServletRequest req) {
         HttpStatus status = HttpStatus.CONFLICT; // 409

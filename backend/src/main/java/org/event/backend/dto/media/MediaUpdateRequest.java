@@ -2,7 +2,6 @@ package org.event.backend.dto.media;
 
 import jakarta.validation.constraints.Size;
 
-/** Update metadata of a media item (no binary file here). */
 public class MediaUpdateRequest {
 
     @Size(max = 150)

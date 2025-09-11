@@ -2,10 +2,6 @@ package org.event.backend.entity;
 
 import jakarta.persistence.*;
 
-/**
- * Category entity used to classify artisans (e.g., Electrician, Plumber).
- * Name is unique (case-insensitive via DB unique constraint).
- */
 @Entity
 @Table(name = "categories",
         uniqueConstraints = @UniqueConstraint(name = "uk_category_name", columnNames = "name"))

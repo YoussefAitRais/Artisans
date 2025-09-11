@@ -6,17 +6,7 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-/**
- * شكل صفحة متوافق مع Angular Page<T>:
- *  - content
- *  - totalElements
- *  - totalPages (اختياري عندك فـ الواجهة لكن نبعثوه)
- *  - size
- *  - number (0-based)
- *
- * تقدر ترجع Page<ArtisanInboxItemResponse> مباشرة من السيرفيس،
- * أو ترجع InboxPage<ArtisanInboxItemResponse> باستعمال of/ofMapped.
- */
+
 public record InboxPage<T>(
         List<T> content,
         long totalElements,

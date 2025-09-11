@@ -4,9 +4,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import java.time.LocalDate;
 
-/**
- * Payload to update a service request by its owner while PENDING.
- */
+
 public class ServiceRequestUpdateRequest {
 
     private Long categoryId; // optional

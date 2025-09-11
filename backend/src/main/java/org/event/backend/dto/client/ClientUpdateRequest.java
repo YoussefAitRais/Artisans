@@ -4,9 +4,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
-/**
- * Payload for updating a client profile (self-update or admin).
- */
+
 public class ClientUpdateRequest {
 
     @NotBlank(message = "First name (nom) is required")

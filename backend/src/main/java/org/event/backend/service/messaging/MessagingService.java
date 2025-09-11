@@ -13,22 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
-/**
- * MessagingService - Clean Code Example for Beginners
- *
- * This service handles all messaging operations between clients and artisans.
- * It demonstrates clean code principles:
- * - Single Responsibility: Only handles messaging logic
- * - Clear naming: Method names describe what they do
- * - Small methods: Each method does one thing well
- * - Constants: No magic numbers or strings
- * - Proper validation: Input checking before processing
- *
- * Key Operations:
- * - Get conversations for a user
- * - Create/find conversations for engagements
- * - Send and list messages
- */
+
 @Service
 public class MessagingService {
 
@@ -62,7 +47,6 @@ public class MessagingService {
     // CONVERSATION OPERATIONS
     // ========================================
 
-    /** Gets all conversations for a user (client or artisan) */
     @Transactional(readOnly = true)
     public Page<ConversationResponse> myConversations(Utilisateur current, Pageable pageable) {
         validateUser(current);
@@ -76,21 +60,18 @@ public class MessagingService {
         throw new IllegalStateException(INVALID_USER_TYPE);
     }
 
-    /** Finds all conversations where user is the client */
     private Page<ConversationResponse> findConversationsForClient(Long clientId, Pageable pageable) {
         return conversationRepository
                 .findByClient_IdOrArtisan_Id(clientId, INVALID_ID, pageable)
                 .map(this::mapToConversationResponse);
     }
 
-    /** Finds all conversations where user is the artisan */
     private Page<ConversationResponse> findConversationsForArtisan(Long artisanId, Pageable pageable) {
         return conversationRepository
                 .findByClient_IdOrArtisan_Id(INVALID_ID, artisanId, pageable)
                 .map(this::mapToConversationResponse);
     }
 
-    /** Gets existing conversation or creates new one for an engagement (idempotent) */
     @Transactional
     public ConversationResponse getOrCreateByEngagement(Utilisateur current, Long engagementId) {
         validateUser(current);
@@ -121,7 +102,6 @@ public class MessagingService {
         return conversationRepository.save(c);
     }
 
-    /** Gets a specific conversation the user has access to */
     @Transactional(readOnly = true)
     public ConversationResponse getConversation(Utilisateur current, Long conversationId) {
         validateUser(current);
@@ -131,11 +111,8 @@ public class MessagingService {
         return mapToConversationResponse(conversation);
     }
 
-    // ========================================
     // MESSAGE OPERATIONS
-    // ========================================
 
-    /** Lists messages in a conversation (chronological order) */
     @Transactional(readOnly = true)
     public Page<MessageResponse> listMessages(Utilisateur current, Long conversationId, Pageable pageable) {
         validateUser(current);
@@ -149,7 +126,7 @@ public class MessagingService {
                 .map(this::mapToMessageResponse);
     }
 
-    /** Sends a message in a conversation */
+    //Sends a message in a conversation
     @Transactional
     public MessageResponse sendMessage(Utilisateur current, Long conversationId, MessageCreateRequest request) {
         validateUser(current);
@@ -172,9 +149,7 @@ public class MessagingService {
         return m;
     }
 
-    // ========================================
     // VALIDATION
-    // ========================================
 
     private void validateUser(Utilisateur user) {
         if (user == null) throw new IllegalArgumentException(USER_NULL_ERROR);
@@ -196,9 +171,7 @@ public class MessagingService {
         if (!isUserPartOfEngagement(user, engagement)) throw new IllegalStateException(ACCESS_DENIED);
     }
 
-    // ========================================
     // BUSINESS HELPERS
-    // ========================================
 
     private Conversation fetchUserOwnedConversation(Utilisateur current, Long conversationId) {
         if (current instanceof Client client) {
@@ -240,9 +213,7 @@ public class MessagingService {
         throw new IllegalStateException("User is not a participant of this conversation");
     }
 
-    // ========================================
     // MAPPERS
-    // ========================================
 
     private ConversationResponse mapToConversationResponse(Conversation conversation) {
         return new ConversationResponse(

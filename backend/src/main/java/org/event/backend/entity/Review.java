@@ -3,10 +3,7 @@ package org.event.backend.entity;
 import jakarta.persistence.*;
 import java.time.Instant;
 
-/**
- * A review left by a Client for an Artisan.
- * Optionally linked to a ServiceRequest (e.g., after completion).
- */
+
 @Entity
 @Table(name = "reviews", indexes = {
         @Index(name = "idx_reviews_artisan", columnList = "artisan_id"),

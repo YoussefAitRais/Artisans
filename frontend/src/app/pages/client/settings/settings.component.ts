@@ -13,7 +13,7 @@ export class SettingsComponent implements OnInit {
   name = signal('');
   email = signal('');
   phone = signal('');
-  city = signal(''); // ماعندناش city فـ Client حالياً، خليه UI فقط
+  city = signal('');
 
   currentPwd = signal('');
   newPwd = signal('');
@@ -33,11 +33,10 @@ export class SettingsComponent implements OnInit {
     const [nom, ...rest] = this.name().split(' ');
     const prenom = rest.join(' ');
     this.api.updateMe({ nom: nom || '', prenom, telephone: this.phone() })
-      .subscribe(() => alert('Profil mis à jour ✔️'));
+      .subscribe(() => alert('Profil mis à jour'));
   }
 
   changePassword() {
-    // ماعندناش endpoint لتغيير الباسورد في الباك الآن.
     alert('TODO: ajouter endpoint /api/client/change-password');
   }
 

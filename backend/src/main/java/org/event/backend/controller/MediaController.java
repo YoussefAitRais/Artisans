@@ -16,12 +16,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
-/**
- * Portfolio endpoints:
- * - Public listing: GET /api/artisans/{id}/portfolio
- * - Owner (artisan): upload/list/update/delete/set-cover under /api/artisan/...
- * - File streaming: GET /api/media/{id}/file
- */
+
 @RestController
 public class MediaController {
 

@@ -4,7 +4,6 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import java.time.Instant;
 
-/** A single message inside a conversation. */
 @Entity
 @Table(name = "messages",
         indexes = {

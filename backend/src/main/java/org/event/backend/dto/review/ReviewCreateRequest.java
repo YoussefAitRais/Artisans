@@ -5,9 +5,7 @@ import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
-/**
- * Payload to create a review by a client.
- */
+
 public class ReviewCreateRequest {
 
     @NotNull

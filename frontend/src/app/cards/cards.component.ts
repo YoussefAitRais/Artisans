@@ -39,7 +39,7 @@ export class CardsComponent implements OnInit, OnDestroy {
     if (this.isBrowser) {
       this.calculateSlidesPerView();
       this.startAutoPlay();
-      
+
       // Listen for window resize
       window.addEventListener('resize', () => this.calculateSlidesPerView());
     }
@@ -54,15 +54,12 @@ export class CardsComponent implements OnInit, OnDestroy {
     }
   }
 
-  /**
-   * Calculate slides per view based on screen size
-   * Mobile-first responsive approach
-   */
+
   calculateSlidesPerView(): void {
     if (!this.isBrowser) return;
-    
+
     const width = window.innerWidth;
-    
+
     if (width < 640) { // Mobile
       this.slidesPerView = 1;
       this.slideWidth = 100;
@@ -76,7 +73,7 @@ export class CardsComponent implements OnInit, OnDestroy {
       this.slidesPerView = 4;
       this.slideWidth = 25;
     }
-    
+
     // Ensure current slide is within bounds
     const maxSlide = this.getMaxSlide();
     if (this.currentSlide > maxSlide) {
@@ -84,59 +81,45 @@ export class CardsComponent implements OnInit, OnDestroy {
     }
   }
 
-  /**
-   * Get maximum slide index
-   */
+
   getMaxSlide(): number {
     return Math.max(0, this.services.length - this.slidesPerView);
   }
 
-  /**
-   * Get total number of slide positions
-   */
+
   getTotalSlides(): number[] {
     const totalSlides = Math.ceil(this.services.length / this.slidesPerView);
     return Array(totalSlides).fill(0);
   }
 
-  /**
-   * Navigate to next slide
-   */
+
   nextSlide(): void {
     const maxSlide = this.getMaxSlide();
     this.currentSlide = this.currentSlide >= maxSlide ? 0 : this.currentSlide + 1;
   }
 
-  /**
-   * Navigate to previous slide
-   */
+
   previousSlide(): void {
     const maxSlide = this.getMaxSlide();
     this.currentSlide = this.currentSlide <= 0 ? maxSlide : this.currentSlide - 1;
   }
 
-  /**
-   * Go to specific slide
-   */
+
   goToSlide(slideIndex: number): void {
     const maxSlide = this.getMaxSlide();
     this.currentSlide = Math.min(slideIndex, maxSlide);
   }
 
-  /**
-   * Start automatic carousel rotation
-   */
+
   startAutoPlay(): void {
     if (!this.isBrowser || !this.isAutoPlaying) return;
-    
+
     this.autoPlayInterval = setInterval(() => {
       this.nextSlide();
     }, 4000); // Change slide every 4 seconds
   }
 
-  /**
-   * Stop automatic carousel rotation
-   */
+
   stopAutoPlay(): void {
     if (this.autoPlayInterval) {
       clearInterval(this.autoPlayInterval);
@@ -144,12 +127,10 @@ export class CardsComponent implements OnInit, OnDestroy {
     }
   }
 
-  /**
-   * Toggle auto-play functionality
-   */
+
   toggleAutoPlay(): void {
     this.isAutoPlaying = !this.isAutoPlaying;
-    
+
     if (this.isAutoPlaying) {
       this.startAutoPlay();
     } else {
@@ -157,23 +138,17 @@ export class CardsComponent implements OnInit, OnDestroy {
     }
   }
 
-  /**
-   * Get project count for a specific service
-   */
+
   getServiceProjectCount(service: any): number {
     return service.projectCount || 0;
   }
 
-  /**
-   * Pause auto-play on hover (for better UX)
-   */
+
   onMouseEnter(): void {
     this.stopAutoPlay();
   }
 
-  /**
-   * Resume auto-play when not hovering
-   */
+
   onMouseLeave(): void {
     if (this.isAutoPlaying) {
       this.startAutoPlay();

@@ -4,9 +4,7 @@ import jakarta.persistence.*;
 import java.time.Instant;
 import java.time.LocalDate;
 
-/**
- * A client-created request for an artisan service (service request).
- */
+
 @Entity
 @Table(name = "requests", indexes = {
         @Index(name = "idx_requests_status", columnList = "status"),

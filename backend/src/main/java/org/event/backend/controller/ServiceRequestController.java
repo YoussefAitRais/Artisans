@@ -16,14 +16,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
-/**
- * Endpoints for service requests.
- *
- * Security expectations (align with your SecurityConfig):
- * - /api/requests/**           -> ROLE_CLIENT (owner)
- * - /api/artisan/requests/**   -> ROLE_ARTISAN (browse open requests)
- * - /api/admin/requests/**     -> ROLE_ADMIN
- */
+
 @RestController
 public class ServiceRequestController {
 

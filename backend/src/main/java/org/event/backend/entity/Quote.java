@@ -4,9 +4,6 @@ import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.time.Instant;
 
-/**
- * Quote (quotation) proposed by an Artisan for a ServiceRequest.
- */
 @Entity
 @Table(name = "quotes", indexes = {
         @Index(name = "idx_quotes_request", columnList = "request_id"),

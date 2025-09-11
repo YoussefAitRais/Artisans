@@ -5,9 +5,7 @@ import jakarta.validation.constraints.Digits;
 import jakarta.validation.constraints.Size;
 import java.math.BigDecimal;
 
-/**
- * Payload for updating a quote while it's still SENT.
- */
+
 public class QuoteUpdateRequest {
 
     @DecimalMin(value = "0.00", message = "Price must be >= 0")

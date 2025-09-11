@@ -16,9 +16,7 @@ import jakarta.persistence.criteria.Predicate;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Business rules for client requests (service requests).
- */
+
 @Service
 public class ServiceRequestService {
 
@@ -174,6 +172,12 @@ public class ServiceRequestService {
             throw new IllegalArgumentException("Request not found");
         }
         serviceRequestRepository.deleteById(id);
+    }
+
+
+    @Transactional(readOnly = true)
+    public long getTotalRequestsCount() {
+        return serviceRequestRepository.count();
     }
 
     // -------- Mapper --------

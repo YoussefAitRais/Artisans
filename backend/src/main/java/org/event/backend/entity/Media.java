@@ -3,10 +3,7 @@ package org.event.backend.entity;
 import jakarta.persistence.*;
 import java.time.Instant;
 
-/**
- * Portfolio media item uploaded by an Artisan.
- * Stores public/derived URLs and basic technical metadata.
- */
+
 @Entity
 @Table(
         name = "media",

@@ -9,7 +9,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/** Business rules for engagements (bookings). */
 @Service
 public class EngagementService {
 
@@ -38,7 +37,6 @@ public class EngagementService {
 
     // ---- Transitions ----
 
-    /** Artisan confirms schedule: PENDING_CONFIRMATION -> SCHEDULED */
     @Transactional
     public EngagementResponse confirmAsArtisan(Artisan artisan, Long id, EngagementConfirmRequest req) {
         Engagement e = engagementRepository.findByIdAndArtisan_Id(id, artisan.getId())
@@ -56,7 +54,6 @@ public class EngagementService {
         return toResponse(e); // managed entity
     }
 
-    /** Start work: SCHEDULED -> IN_PROGRESS (either party may trigger) */
     @Transactional
     public EngagementResponse start(Utilisateur current, Long id) {
         Engagement e = fetchOwned(current, id);
@@ -67,7 +64,6 @@ public class EngagementService {
         return toResponse(e);
     }
 
-    /** Complete work: IN_PROGRESS -> COMPLETED (prefer client) */
     @Transactional
     public EngagementResponse completeAsClient(Client client, Long id) {
         Engagement e = engagementRepository.findByIdAndClient_Id(id, client.getId())
@@ -79,7 +75,6 @@ public class EngagementService {
         return toResponse(e);
     }
 
-    /** Cancel before start: PENDING_CONFIRMATION/SCHEDULED -> CANCELLED (either) */
     @Transactional
     public EngagementResponse cancel(Utilisateur current, Long id) {
         Engagement e = fetchOwned(current, id);

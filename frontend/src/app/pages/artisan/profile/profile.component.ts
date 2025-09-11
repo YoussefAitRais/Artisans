@@ -19,7 +19,6 @@ export class ArtisanProfileComponent implements OnInit {
     this.api.getMyProfile().subscribe(p => (this.model = p));
   }
 
-  /** Persist profile changes */
   save(): void {
     this.saving = true;
     this.api.updateMyProfile(this.model).subscribe({

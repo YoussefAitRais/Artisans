@@ -4,9 +4,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import java.time.LocalDate;
 
-/**
- * Payload to create a new service request by a client.
- */
+
 public class ServiceRequestCreateRequest {
 
     private Long categoryId; // optional

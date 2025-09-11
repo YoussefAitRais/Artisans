@@ -1,8 +1,6 @@
 package org.event.backend.dto.client;
 
-/**
- * Response DTO representing a client profile.
- */
+
 public class ClientResponse {
 
     private Long id;

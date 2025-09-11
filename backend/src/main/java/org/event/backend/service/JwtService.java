@@ -14,9 +14,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 
-/**
- * Service for generating and validating JWT tokens.
- */
+
 @Service
 public class JwtService {
 
@@ -72,23 +70,17 @@ public class JwtService {
         return username.equals(userDetails.getUsername()) && !isTokenExpired(token);
     }
 
-    /**
-     * Check if the token is expired.
-     */
+
     private boolean isTokenExpired(String token) {
         return extractExpiration(token).before(new Date());
     }
 
-    /**
-     * Extract expiration date from token.
-     */
+
     private Date extractExpiration(String token) {
         return extractClaim(token, Claims::getExpiration);
     }
 
-    /**
-     * Extract all claims from token.
-     */
+
     private Claims extractAllClaims(String token) {
         return Jwts.parserBuilder()
                 .setSigningKey(getSignInKey())
@@ -97,9 +89,7 @@ public class JwtService {
                 .getBody();
     }
 
-    /**
-     * Decode the Base64 secret and get signing key.
-     */
+
     private Key getSignInKey() {
         byte[] keyBytes = Decoders.BASE64.decode(secretKeyBase64);
         return Keys.hmacShaKeyFor(keyBytes);

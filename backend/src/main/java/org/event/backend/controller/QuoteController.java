@@ -14,14 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
-/**
- * Endpoints for Quotes (quotes).
- *
- * Security expectations:
- * - Artisan-only: create/update/delete own quotes
- * - Client-only: list quotes for own request + accept a quote
- * - Admin: moderate/view lists
- */
+
 @RestController
 public class QuoteController {
 

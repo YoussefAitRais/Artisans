@@ -2,10 +2,10 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
-// === API base ===
+// API base
 const API_BASE = 'http://localhost:8091';
 
-// ====== Models ======
+// Models and Types
 export type EngagementStatus =
   | 'PENDING_CONFIRMATION'
   | 'SCHEDULED'
@@ -42,7 +42,7 @@ export interface EngagementConfirmRequest {
 @Injectable({ providedIn: 'root' })
 export class EngagementApiService {
   private base = `${API_BASE}/api/engagements`;
-  
+
   constructor(private http: HttpClient) {}
 
   /** Get my engagements (role-aware) */
@@ -61,17 +61,17 @@ export class EngagementApiService {
     return this.http.post<EngagementResponse>(`${this.base}/${id}/confirm`, request);
   }
 
-  /** Start work: SCHEDULED -> IN_PROGRESS */
+  /*Start work: SCHEDULED -> IN_PROGRESS */
   startEngagement(id: number): Observable<EngagementResponse> {
     return this.http.post<EngagementResponse>(`${this.base}/${id}/start`, {});
   }
 
-  /** Complete work: IN_PROGRESS -> COMPLETED (client action) */
+  /* Complete work: IN_PROGRESS -> COMPLETED (client action) */
   completeEngagement(id: number): Observable<EngagementResponse> {
     return this.http.post<EngagementResponse>(`${this.base}/${id}/complete`, {});
   }
 
-  /** Cancel engagement: PENDING_CONFIRMATION/SCHEDULED -> CANCELLED */
+  /* Cancel engagement: PENDING_CONFIRMATION/SCHEDULED -> CANCELLED */
   cancelEngagement(id: number): Observable<EngagementResponse> {
     return this.http.post<EngagementResponse>(`${this.base}/${id}/cancel`, {});
   }

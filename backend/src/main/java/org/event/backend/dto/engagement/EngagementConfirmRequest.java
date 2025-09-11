@@ -3,7 +3,6 @@ package org.event.backend.dto.engagement;
 import jakarta.validation.constraints.NotNull;
 import java.time.LocalDate;
 
-/** Artisan sets/confirm the schedule. */
 public class EngagementConfirmRequest {
 
     @NotNull

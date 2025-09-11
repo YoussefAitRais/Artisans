@@ -11,6 +11,7 @@ import org.springframework.security.authentication.dao.DaoAuthenticationProvider
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -97,19 +98,17 @@ public class SecurityConfig {
                                 "/api/auth/register-artisan",
                                 "/api/auth/login",
                                 "/swagger-ui/**",
-                                "/v3/api-docs/**"
+                                "/swagger-ui.html",
+                                "/v3/api-docs/**",
+                                "/error"
                         ).permitAll()
 
-                        // ---- مسارات خاصة (خليها قبل القاعدة العامة ديال /api/requests/**) ----
-                        // Artisan كيصيفط quote على request
+
                         .requestMatchers(HttpMethod.POST, "/api/requests/*/quotes").hasRole("ARTISAN")
-                        // Artisan يحدّث/يمسح quote ديالو
                         .requestMatchers(HttpMethod.PUT,    "/api/quotes/**").hasRole("ARTISAN")
                         .requestMatchers(HttpMethod.DELETE, "/api/quotes/**").hasRole("ARTISAN")
-                        // Client كيقابل quote
                         .requestMatchers(HttpMethod.POST, "/api/quotes/*/accept").hasRole("CLIENT")
 
-                        // -------- قواعد عامة حسب الدومين --------
                         .requestMatchers("/api/requests/**").hasRole("CLIENT")
                         .requestMatchers("/api/artisan/requests/**").hasRole("ARTISAN")
                         .requestMatchers("/api/admin/requests/**").hasRole("ADMIN")
@@ -117,7 +116,6 @@ public class SecurityConfig {
                         .requestMatchers("/api/artisan/**").hasRole("ARTISAN")
                         .requestMatchers("/api/client/**").hasRole("CLIENT")
 
-                        // أي حاجة أخرى تتطلب auth
                         .anyRequest().authenticated()
                 )
 
@@ -141,5 +139,15 @@ public class SecurityConfig {
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
         return config.getAuthenticationManager();
+    }
+
+    @Bean public WebSecurityCustomizer webSecurityCustomizer()
+    { return web -> web.ignoring().requestMatchers(
+            "/swagger-ui/**",
+            "/swagger-ui.html",
+            "/v3/api-docs/**",
+            "/webjars/**",
+            "/favicon.ico",
+            "/error" );
     }
 }

@@ -4,9 +4,7 @@ import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Size;
 
-/**
- * Payload to update an existing review by its owner (client).
- */
+
 public class ReviewUpdateRequest {
 
     @Min(1) @Max(5)

@@ -1,8 +1,6 @@
 package org.event.backend.dto.category;
 
-/**
- * Response returned to clients listing category info.
- */
+
 public class CategoryResponse {
 
     private Long id;

@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, map } from 'rxjs';
 
-/** Generic pagination wrapper (Spring Data Page) */
+//Generic pagination wrapper (Spring Data Page)
 export interface Page<T> {
   content: T[];
   totalElements: number;

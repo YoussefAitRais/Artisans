@@ -3,7 +3,6 @@ package org.event.backend.entity;
 import jakarta.persistence.*;
 import java.time.Instant;
 
-/** One conversation per engagement (client <-> artisan). */
 @Entity
 @Table(name = "conversations",
         uniqueConstraints = {

@@ -2,7 +2,6 @@ package org.event.backend.dto.messaging;
 
 import java.time.Instant;
 
-/** Minimal conversation data for lists/details. */
 public class ConversationResponse {
     private Long id;
     private Long engagementId;

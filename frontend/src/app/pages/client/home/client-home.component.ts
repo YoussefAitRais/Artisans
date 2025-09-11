@@ -149,7 +149,7 @@ export class ClientHomeComponent implements OnInit {
           this.showModal = false;
         },
         error: () => {
-          this.errorMsg = 'Échec de l’envoi.';
+          this.errorMsg = "Échec de l'envoi.";
           this.sending = false;
         },
       });

@@ -29,7 +29,7 @@ const API_TIMEOUT = 10000; // 10 seconds timeout
 
 /**
  * AuthService - Clean Code for Beginners
- * 
+ *
  * This service handles all authentication operations.
  * It demonstrates:
  * - Clear error handling with user-friendly messages
@@ -40,49 +40,38 @@ const API_TIMEOUT = 10000; // 10 seconds timeout
 export class AuthService {
   constructor(private http: HttpClient) {}
 
-  /**
-   * Logs in a user with email and password
-   * 
-   * @param email - User's email address
-   * @param password - User's password
-   * @returns Observable with token and role information
-   */
+
   login(email: string, password: string): Observable<{ token: string; role: Role }> {
-    console.log('🔐 Attempting login for:', email);
-    
+    console.log(' Attempting login for:', email);
+
     return this.http.post<LoginResponse>(`${API_BASE}/auth/login`, { email, password }).pipe(
       map(response => {
-        console.log('✅ Login response received:', response);
-        
+        console.log('Login response received:', response);
+
         // Extract token from different possible field names
         const token = response.token || response.access_token || (response as any).accessToken;
-        
+
         if (!token || !response.role) {
           throw new Error('Invalid server response - missing token or role');
         }
-        
+
         // Store authentication data
         localStorage.setItem('token', token);
         localStorage.setItem('role', response.role);
-        
-        console.log('✅ Login successful for role:', response.role);
+
+        console.log('Login successful for role:', response.role);
         return { token, role: response.role };
       }),
       catchError(this.handleLoginError)
     );
   }
-  
-  /**
-   * Handles login errors and provides user-friendly messages
-   * 
-   * This method converts technical HTTP errors into messages
-   * that beginners can understand and act upon.
-   */
+
+
   private handleLoginError = (error: HttpErrorResponse): Observable<never> => {
-    console.error('❌ Login error details:', error);
-    
+    console.error('Login error details:', error);
+
     let userMessage = 'Login failed. Please try again.';
-    
+
     if (error.error === 0) {
       // Network error - server not reachable
       userMessage = 'Cannot connect to server. Please check:\n' +
@@ -105,23 +94,18 @@ export class AuthService {
                    '• CORS is properly configured\n' +
                    '• No firewall blocking the connection';
     }
-    
+
     return throwError(() => ({ error: { message: userMessage } }));
   };
 
-  /**
-   * Registers a new user (Client or Artisan)
-   * 
-   * @param body - Registration data including role-specific information
-   * @returns Observable with registration result
-   */
+
   register(body: RegisterRequest): Observable<any> {
-    console.log('📝 Attempting registration for:', body.email, 'as', body.role);
-    
+    console.log('Attempting registration for:', body.email, 'as', body.role);
+
     // Determine the correct registration endpoint based on role
     const path = body.role === 'ARTISAN' ? 'register-artisan' :
                  body.role === 'CLIENT'  ? 'register-client'  : null;
-    
+
     if (!path) {
       throw new Error('Invalid role: must be CLIENT or ARTISAN');
     }
@@ -133,7 +117,7 @@ export class AuthService {
       email: body.email,
       password: body.password
     };
-    
+
     // Add artisan-specific fields if registering as artisan
     if (body.role === 'ARTISAN') {
       payload.metier = body.metier;
@@ -141,20 +125,18 @@ export class AuthService {
       payload.description = body.description;
       payload.categoryId = body.categoryId;
     }
-    
+
     return this.http.post(`${API_BASE}/auth/${path}`, payload).pipe(
       catchError(this.handleRegistrationError)
     );
   }
-  
-  /**
-   * Handles registration errors with user-friendly messages
-   */
+
+
   private handleRegistrationError = (error: HttpErrorResponse): Observable<never> => {
-    console.error('❌ Registration error:', error);
-    
+    console.error('Registration error:', error);
+
     let userMessage = 'Registration failed. Please try again.';
-    
+
     if (error.status === 409) {
       userMessage = 'Email address is already registered. Please use a different email or try logging in.';
     } else if (error.status === 400) {
@@ -162,18 +144,13 @@ export class AuthService {
     } else if (error.status === 0 || error.message?.includes('Failed to fetch')) {
       userMessage = 'Cannot connect to server. Please ensure the backend is running.';
     }
-    
+
     return throwError(() => ({ error: { message: userMessage } }));
   };
 
   // === UTILITY METHODS ===
-  
-  /**
-   * Returns the home URL based on user role
-   * 
-   * @param role - User's role (ADMIN, ARTISAN, CLIENT)
-   * @returns URL string for the user's dashboard
-   */
+
+
   homeUrl(role: Role | null): string {
     switch (role) {
       case 'ADMIN': return '/admin/home';
@@ -183,67 +160,51 @@ export class AuthService {
     }
   }
 
-  /**
-   * Gets the stored authentication token
-   */
+
   get token(): string | null {
     return localStorage.getItem('token');
   }
-  
-  /**
-   * Gets the stored user role
-   */
+
+
   get role(): Role | null {
     return (localStorage.getItem('role') as Role) ?? null;
   }
-  
-  /**
-   * Checks if user is currently logged in
-   */
+
+
   isLoggedIn(): boolean {
     return !!this.token && !!this.role;
   }
 
-  /**
-   * Logs out the user by clearing stored data
-   */
+
   logout(): void {
-    console.log('🚪 Logging out user');
+    console.log('Logging out user');
     localStorage.removeItem('token');
     localStorage.removeItem('role');
   }
-  
-  /**
-   * Test connection to backend server
-   * 
-   * This method helps diagnose connection issues
-   */
+
+
   testConnection(): Observable<any> {
-    console.log('🔍 Testing connection to backend...');
+    console.log('Testing connection to backend...');
     return this.http.get(`${API_BASE}/auth/test`).pipe(
       catchError((error) => {
-        console.error('❌ Connection test failed:', error);
+        console.error('Connection test failed:', error);
         return throwError(() => error);
       })
     );
   }
 }
 
-/**
- * Helper function to check if backend is reachable
- * 
- * This can be used in components to diagnose connection issues
- */
+
 export function checkBackendConnection(): Promise<boolean> {
-  return fetch(`${API_BASE}/auth/test`, { 
+  return fetch(`${API_BASE}/auth/test`, {
     method: 'GET'
   })
     .then(() => {
-      console.log('✅ Backend connection successful');
+      console.log('Backend connection successful');
       return true;
     })
     .catch((error) => {
-      console.error('❌ Backend connection failed:', error);
+      console.error('Backend connection failed:', error);
       return false;
     });
 }

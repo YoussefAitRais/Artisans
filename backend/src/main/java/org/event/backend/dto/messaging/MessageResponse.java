@@ -3,7 +3,6 @@ package org.event.backend.dto.messaging;
 import org.event.backend.entity.MessageSenderRole;
 import java.time.Instant;
 
-/** Message data returned to clients. */
 public class MessageResponse {
     private Long id;
     private Long conversationId;

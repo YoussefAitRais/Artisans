@@ -19,9 +19,7 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.TypedQuery;
 import java.util.List;
 
-/**
- * Business logic for client profiles: self-get/update and admin ops.
- */
+
 @Service
 public class ClientService {
 
@@ -142,6 +140,12 @@ public class ClientService {
             throw new IllegalArgumentException("Client not found");
         }
         clientRepository.deleteById(id);
+    }
+
+
+    @Transactional(readOnly = true)
+    public long getTotalClientsCount() {
+        return clientRepository.count();
     }
 
     // ---------- Mappers ----------

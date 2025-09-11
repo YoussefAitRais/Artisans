@@ -4,9 +4,7 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Standard API error payload returned to the frontend.
- */
+
 public class ApiError {
     private int status;                 // HTTP status code (e.g., 400, 404)
     private String error;               // HTTP reason phrase (e.g., "Bad Request")

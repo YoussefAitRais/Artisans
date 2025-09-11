@@ -6,7 +6,6 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
 
-/** Data sent to client/ artisan dashboards. */
 public class EngagementResponse {
 
     private Long id;

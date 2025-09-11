@@ -15,7 +15,6 @@ export class ArtisanQuotesComponent implements OnInit {
   loading = false;
   quotes: Quote[] = [];
 
-  // simple creator (اختياري من هنا)
   model = { requestId: null as number|null, price: null as number|null, estimatedDays: null as number|null, message: '' };
 
   ngOnInit(){ this.refresh(); }

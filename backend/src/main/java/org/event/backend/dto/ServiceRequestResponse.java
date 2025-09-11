@@ -5,9 +5,7 @@ import org.event.backend.entity.RequestStatus;
 import java.time.Instant;
 import java.time.LocalDate;
 
-/**
- * Response DTO for returning service request data.
- */
+
 public class ServiceRequestResponse {
 
     private Long id;

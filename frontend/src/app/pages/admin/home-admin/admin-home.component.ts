@@ -57,7 +57,10 @@ export class AdminHomeComponent implements OnInit {
           this.demandes.set(s.demandes ?? 0);
           this.avis.set(s.avis ?? 0);
         },
-        error: _ => {
+        error: (err) => {
+          console.warn('Stats endpoint not available, using fallback:', err);
+          // Fallback to loading individual counts
+          this.loadClientsCount();
         }
       });
   }
@@ -97,4 +100,25 @@ export class AdminHomeComponent implements OnInit {
   }
 
   trackById = (_: number, c: ClientResponse) => c.id;
+
+  /**
+   * Fallback method to load client count individually
+   * if stats endpoint is not available
+   */
+  private loadClientsCount(): void {
+    const params = new HttpParams()
+      .set('page', 0)
+      .set('size', 1);
+
+    this.http.get<Page<ClientResponse>>(`${this.API_BASE}/api/admin/clients`, { params })
+      .subscribe({
+        next: (page) => {
+          this.clients.set(page.totalElements);
+        },
+        error: (err) => {
+          console.error('Failed to load client count:', err);
+          this.clients.set(0);
+        }
+      });
+  }
 }

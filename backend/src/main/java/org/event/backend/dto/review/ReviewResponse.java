@@ -2,9 +2,7 @@ package org.event.backend.dto.review;
 
 import java.time.Instant;
 
-/**
- * Response DTO for reviews.
- */
+
 public class ReviewResponse {
 
     private Long id;

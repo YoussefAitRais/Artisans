@@ -3,9 +3,7 @@ package org.event.backend.dto.category;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
-/**
- * Payload to update an existing category.
- */
+
 public class CategoryUpdateRequest {
 
     @NotBlank(message = "Name is required")

@@ -18,22 +18,22 @@ export class CategoriesComponent implements OnInit {
   loading = false;
   error = '';
   success = '';
-  
+
   // Precomputed random artisan counts to avoid non-deterministic template calls
   private artisanCounts: Map<number, number> = new Map();
 
   // Category images mapping for better visual representation
   private categoryImages: { [key: string]: string } = {
-    'Plomberie': 'assets/Images/plomberie.jpg',
-    'Électricité': 'assets/Images/electricite.jpg',
-    'Peinture': 'assets/Images/peinture.jpg',
-    'Menuiserie': 'assets/Images/menuiserie.jpg',
-    'Jardinage': 'assets/Images/jardinage.jpg',
-    'Nettoyage': 'assets/Images/nettoyage.jpg',
-    'Réparation': 'assets/Images/reparation.jpg',
-    'Construction': 'assets/Images/construction.jpg',
-    'Climatisation': 'assets/Images/climatisation.jpg',
-    'Carrelage': 'assets/Images/carrelage.jpg'
+    'Plomberie': 'assets/Images/artisan.jpg',
+    'Électricité': 'assets/Images/artisan.jpg',
+    'Peinture': 'assets/Images/artisan.jpg',
+    'Menuiserie': 'assets/Images/artisan.jpg',
+    'Jardinage': 'assets/Images/artisan.jpg',
+    'Nettoyage': 'assets/Images/artisan.jpg',
+    'Réparation': 'assets/Images/artisan.jpg',
+    'Construction': 'assets/Images/artisan.jpg',
+    'Climatisation': 'assets/Images/artisan.jpg',
+    'Carrelage': 'assets/Images/artisan.jpg'
   };
 
   // Category icons mapping
@@ -55,22 +55,20 @@ export class CategoriesComponent implements OnInit {
     this.loadCategories();
   }
 
-  /**
-   * Load categories from the API
-   */
+
   loadCategories(): void {
     this.loading = true;
     this.error = '';
-    
+
     const params = new HttpParams().set('page', 0).set('size', 100);
-    
+
     this.http.get<{content: Category[]}>('http://localhost:8091/api/categories', { params })
       .subscribe({
         next: (response) => {
           this.items = response?.content ?? [];
           // Precompute artisan counts for each category to avoid template issues
           this.precomputeArtisanCounts();
-          
+
           if (this.items.length > 0) {
             this.success = `Found ${this.items.length} categories`;
             setTimeout(() => this.success = '', 3000); // Clear success message after 3 seconds
@@ -85,10 +83,8 @@ export class CategoriesComponent implements OnInit {
         }
       });
   }
-  
-  /**
-   * Precompute random artisan counts for all categories to ensure stable values
-   */
+
+
   private precomputeArtisanCounts(): void {
     this.artisanCounts.clear();
     this.items.forEach(category => {
@@ -98,10 +94,8 @@ export class CategoriesComponent implements OnInit {
       this.artisanCounts.set(category.id, count);
     });
   }
-  
-  /**
-   * Generate a stable seed from category ID and name
-   */
+
+
   private generateSeed(id: number, name: string): number {
     let hash = 0;
     const str = `${id}-${name}`;
@@ -112,38 +106,34 @@ export class CategoriesComponent implements OnInit {
     }
     return Math.abs(hash);
   }
-  
-  /**
-   * Generate a stable "random" number within a range using a seed
-   */
+
+
   private generateStableRandom(seed: number, min: number, max: number): number {
     const x = Math.sin(seed) * 10000;
     const random = x - Math.floor(x);
     return Math.floor(random * (max - min + 1)) + min;
   }
 
-  /**
-   * Get category image with fallback
-   */
+
   getCategoryImage(categoryName: string): string {
     const image = this.categoryImages[categoryName];
     if (image) {
       return image;
     }
-    
+
     // Fallback to a beautiful gradient placeholder
     const colors = [
       'from-blue-500 to-purple-600',
-      'from-green-500 to-teal-600', 
+      'from-green-500 to-teal-600',
       'from-pink-500 to-rose-600',
       'from-yellow-500 to-orange-600',
       'from-indigo-500 to-blue-600',
       'from-purple-500 to-pink-600'
     ];
-    
+
     const colorIndex = categoryName.length % colors.length;
     const gradientClass = colors[colorIndex];
-    
+
     // Return a data URL for a simple gradient background
     return `data:image/svg+xml;base64,${btoa(`
       <svg width="400" height="200" xmlns="http://www.w3.org/2000/svg">
@@ -159,16 +149,12 @@ export class CategoriesComponent implements OnInit {
     `)}`;
   }
 
-  /**
-   * Get category icon with fallback
-   */
+
   getCategoryIcon(categoryName: string): string {
     return this.categoryIcons[categoryName] || this.categoryIcons['default'];
   }
 
-  /**
-   * Get precomputed artisan count for a category (stable across change detection cycles)
-   */
+
   getArtisanCount(categoryId: number): number {
     return this.artisanCounts.get(categoryId) || 0;
   }

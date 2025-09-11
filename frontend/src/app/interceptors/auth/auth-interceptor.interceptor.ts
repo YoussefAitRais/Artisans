@@ -3,7 +3,6 @@ import { inject, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
-  // تجنّب إضافة Authorization على auth endpoints (نسبي أو مطلق)
   const isAuth = /\/api\/auth\//.test(req.url);
   if (isAuth) return next(req);
 

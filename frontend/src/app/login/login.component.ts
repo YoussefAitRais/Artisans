@@ -44,23 +44,14 @@ export class LoginComponent implements OnInit {
     return fieldName === 'email' ? 'Email' : 'Password';
   }
 
-  /**
-   * Handles form submission for user login
-   * 
-   * Clean Code for Beginners:
-   * 1. Check if already loading (prevent double submission)
-   * 2. Clear previous errors
-   * 3. Validate form data
-   * 4. Send login request
-   * 5. Handle success/error responses
-   */
+
   onSubmit(): void {
     // Step 1: Prevent multiple submissions
     if (this.loading) {
-      console.log('⚠️ Login already in progress, ignoring duplicate submission');
+      console.log('Login already in progress, ignoring duplicate submission');
       return;
     }
-    
+
     // Step 2: Clear any previous error messages
     this.error = null;
     this.loginForm.markAllAsTouched();
@@ -74,7 +65,7 @@ export class LoginComponent implements OnInit {
 
     // Step 4: Extract form data and prepare for login
     const { email, password } = this.loginForm.value;
-    
+
     if (!email || !password) {
       this.error = 'Email and password are required.';
       return;
@@ -82,7 +73,7 @@ export class LoginComponent implements OnInit {
 
     console.log('🚀 Starting login process for:', email);
     this.loading = true;
-    
+
     // Step 5: Send login request with proper error handling
     this.auth.login(email.trim(), password)
       .pipe(
@@ -93,44 +84,39 @@ export class LoginComponent implements OnInit {
       )
       .subscribe({
         next: ({ role }) => {
-          console.log('✅ Login successful! Redirecting user with role:', role);
-          
+          console.log('Login successful! Redirecting user with role:', role);
+
           // Determine where to redirect the user
           const redirectPath = this.getRedirectPath(role);
-          console.log('🔄 Redirecting to:', redirectPath);
-          
+          console.log('Redirecting to:', redirectPath);
+
           this.router.navigateByUrl(redirectPath);
         },
         error: (err) => {
-          console.error('❌ Login failed:', err);
-          
+          console.error('Login failed:', err);
+
           // Use the improved error message from AuthService
           this.error = err?.error?.message || 'Login failed. Please check your credentials and try again.';
         }
       });
   }
-  
-  /**
-   * Determines where to redirect user after successful login
-   * 
-   * @param role - User's role from login response
-   * @returns URL path for redirection
-   */
+
+
   private getRedirectPath(role: Role): string {
     // First check if there's a specific redirect target
     const requestedRedirect = this.redirectTarget?.trim();
-    
+
     if (requestedRedirect) {
       // Validate redirect target is safe
-      const isSafeRedirect = requestedRedirect.startsWith('/') && 
-                            !requestedRedirect.startsWith('/api/') && 
+      const isSafeRedirect = requestedRedirect.startsWith('/') &&
+                            !requestedRedirect.startsWith('/api/') &&
                             !requestedRedirect.startsWith('//');
-      
+
       if (isSafeRedirect) {
         return requestedRedirect;
       }
     }
-    
+
     // Fall back to role-based home page
     return this.auth.homeUrl(role);
   }

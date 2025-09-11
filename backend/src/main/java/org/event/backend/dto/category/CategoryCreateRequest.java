@@ -3,9 +3,7 @@ package org.event.backend.dto.category;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
-/**
- * Payload to create a new category.
- */
+
 public class CategoryCreateRequest {
 
     @NotBlank(message = "Name is required")

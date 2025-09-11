@@ -4,7 +4,6 @@ import org.event.backend.entity.MediaStatus;
 
 import java.time.Instant;
 
-/** What the frontend needs to render an image card in the portfolio grid. */
 public class MediaResponse {
 
     private Long id;
@@ -14,7 +13,6 @@ public class MediaResponse {
     private String description;
     private String tags;
 
-    /** Public URL to stream the file (served by controller) */
     private String url;
 
     private String thumbUrl;   // optional (null for MVP)

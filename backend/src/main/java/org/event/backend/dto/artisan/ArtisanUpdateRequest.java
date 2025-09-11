@@ -3,9 +3,7 @@ package org.event.backend.dto.artisan;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
-/**
- * Payload for updating an artisan profile (self-update or admin).
- */
+
 public class ArtisanUpdateRequest {
 
     @NotBlank(message = "First name is required")

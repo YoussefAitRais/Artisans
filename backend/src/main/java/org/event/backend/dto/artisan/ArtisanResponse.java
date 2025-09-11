@@ -1,8 +1,6 @@
 package org.event.backend.dto.artisan;
 
-/**
- * Response DTO representing an artisan profile.
- */
+
 public class ArtisanResponse {
 
     private Long id;
